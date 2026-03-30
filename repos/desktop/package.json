@@ -7,9 +7,16 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/discord-rpc": "^4.0.10",
     "electron": "^41.1.0"
   },
   "peerDependencies": {
     "typescript": "^5"
-  }
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
+  },
+  "trustedDependencies": [
+    "register-scheme"
+  ]
 }

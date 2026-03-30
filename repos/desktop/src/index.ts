@@ -1,4 +1,7 @@
 import { app, BrowserWindow } from "electron";
+import { DiscordRPCModule } from "./modules/discord-rpc";
+
+let rpcModule: DiscordRPCModule | null = null;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -15,6 +18,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
+  rpcModule = new DiscordRPCModule();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
