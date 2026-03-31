@@ -13,5 +13,11 @@ message ListDirRequest {
 }
 
 message ListDirResponse {
-  repeated string entries = 1;
+  repeated FileEntry entries = 1;
+}
+
+message FileEntry {
+  string name = 1;
+  string path = 2;
+  string type = 3;
 }

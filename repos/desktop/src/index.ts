@@ -1,5 +1,13 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { DiscordRPCModule } from "./modules/discord-rpc";
+import path from "path";
+import axios from "axios";
+import http from "http";
+
+const socketAxios = axios.create({
+  baseURL: "http://localhost",
+  socketPath: path.join(process.cwd(), "../backend/backend.sock"),
+});
 
 let rpcModule: DiscordRPCModule | null = null;
 
@@ -10,6 +18,8 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
+      preload: path.join(app.getAppPath(), "dist/preload.js"),
+      devTools: true,
     },
   });
 
@@ -27,4 +37,14 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+ipcMain.handle("api-request", async (event, endpoint, options) => {
+  try {
+    const response = await socketAxios({ url: endpoint, ...options });
+
+    return { data: response.data, status: response.status };
+  } catch (error: any) {
+    return { error: error.message };
+  }
 });

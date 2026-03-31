@@ -29,9 +29,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${font_jakarta.variable} ${font_jetBrains.variable} ${font_firacode.variable} h-full antialiased`}
+      className={`${font_jakarta.variable} ${font_jetBrains.variable} ${font_firacode.variable} mocha dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-ctp-base text-ctp-text">
+        {children}
+      </body>
     </html>
   );
 }

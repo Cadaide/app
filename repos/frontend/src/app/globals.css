@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@catppuccin/tailwindcss/mocha.css";
 
 @theme inline {
   --font-sans: var(--font-jakarta);

@@ -1,19 +1,21 @@
 {
   "name": "desktop",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "private": true,
   "scripts": {
-    "start": "bun build src/index.ts --outfile=dist/index.cjs --target=node --format=cjs --packages=external && electron ."
+    "start": "bun build src/index.ts src/preload.ts --outdir=dist --target=node --format=cjs --packages=external && electron ."
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/discord-rpc": "^4.0.10",
+    "@types/node": "^25.5.0",
     "electron": "^41.1.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "axios": "^1.14.0",
     "discord-rpc": "^4.0.1"
   },
   "trustedDependencies": [

@@ -1,8 +1,8 @@
 import { Monaco } from "@monaco-editor/react";
-import { themeCatpuccinMocha } from "./themes/catpuccin/mocha.theme";
+import { themeCatppuccinMocha } from "./themes/catppuccin/mocha.theme";
 
 const themes = {
-  "catpuccin-mocha": themeCatpuccinMocha,
+  "catpuccin-mocha": themeCatppuccinMocha,
 };
 
 export function registerMonacoThemes(monaco: Monaco) {

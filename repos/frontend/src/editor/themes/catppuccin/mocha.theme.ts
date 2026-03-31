@@ -19,7 +19,7 @@ const mocha = {
   mauve: "#cba6f7",
 };
 
-export const themeCatpuccinMocha: editor.IStandaloneThemeData = {
+export const themeCatppuccinMocha: editor.IStandaloneThemeData = {
   base: "vs-dark",
   inherit: false,
   colors: {

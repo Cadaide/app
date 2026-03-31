@@ -21,10 +21,22 @@ func (s *fsServer) ListDir(ctx context.Context, req *pb.ListDirRequest) (*pb.Lis
 		return nil, err
 	}
 
-	var entries []string
+	var entries []*pb.FileEntry
 
 	for _, dir := range dirs {
-		entries = append(entries, dir.Name())
+		var fileType string
+
+		if dir.Type().IsDir() {
+			fileType = "directory"
+		} else {
+			fileType = "file"
+		}
+
+		entries = append(entries, &pb.FileEntry{
+			Name: dir.Name(),
+			Path: req.Path + "/" + dir.Name(),
+			Type: fileType,
+		})
 	}
 
 	return &pb.ListDirResponse{Entries: entries}, nil

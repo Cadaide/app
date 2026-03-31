@@ -10,6 +10,12 @@ export function CodeEditor() {
       theme="catpuccin-mocha"
       language="typescript"
       height="100vh"
+      options={{
+        fontSize: 18,
+        fontWeight: "700",
+        fontFamily: "var(--font-jetBrains), 'JetBrains Mono', monospace",
+        fontLigatures: true,
+      }}
     />
   );
 }
