@@ -13,17 +13,21 @@ export const useProjectStore = create<{
     content: string;
   }[];
   activeFile: string | null;
+  tabs: string[];
 
   openProject: (path: string) => Promise<void>;
   loadFile: (path: string, content: string) => void;
   loadAllFiles: (path: string) => Promise<void>;
   setActiveFile: (path: string) => void;
+  openTab: (path: string) => void;
+  closeTab: (path: string) => void;
 }>()(
   persist(
     (set, get) => ({
       path: null,
       loadedFiles: [],
       activeFile: null,
+      tabs: [],
 
       openProject: async (path: string) => {
         set({ path, loadedFiles: [] });
@@ -59,10 +63,19 @@ export const useProjectStore = create<{
         const content = await API.fs.readFile(path);
 
         get().loadFile(path, content);
+        get().openTab(path);
 
         set({ activeFile: path });
 
         window.api.setActivity(pathToName(path));
+      },
+      openTab: (path: string) => {
+        if (get().tabs.includes(path)) return;
+
+        set({ tabs: [...get().tabs, path] });
+      },
+      closeTab: (path: string) => {
+        set({ tabs: get().tabs.filter((tab) => tab !== path) });
       },
     }),
     {
@@ -70,6 +83,7 @@ export const useProjectStore = create<{
       partialize: (state) => ({
         path: state.path,
         activeFile: state.activeFile,
+        tabs: state.tabs,
       }),
     },
   ),

@@ -9,6 +9,14 @@ const languagePatterns = [
     pattern: "*.py",
     language: "python",
   },
+  {
+    pattern: "*.json",
+    language: "json",
+  },
+  {
+    pattern: "*.sh",
+    language: "shell",
+  },
 ];
 
 export function getLanguage(name: string) {

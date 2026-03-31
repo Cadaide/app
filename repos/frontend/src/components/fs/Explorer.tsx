@@ -88,7 +88,7 @@ function ExplorerDirectoryEntry(props: { entry: FsEntry }) {
   return (
     <div className="w-full flex flex-col">
       <div
-        className="flex flex-row items-center gap-1.5 px-3.5 py-1 hover:bg-ctp-surface0 cursor-pointer transition-colors text-ctp-text"
+        className="flex flex-row items-center gap-1.5 px-1.5 py-1 hover:bg-ctp-surface0 cursor-pointer transition-colors text-ctp-text"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <PiCaretRight
@@ -101,7 +101,7 @@ function ExplorerDirectoryEntry(props: { entry: FsEntry }) {
         <span className="truncate">{props.entry.name}</span>
       </div>
       {isExpanded && (
-        <div className="pl-3 w-full border-l border-ctp-surface0 ml-2.5">
+        <div className="w-full border-l border-ctp-surface0 ml-3.5">
           <ExplorerList path={props.entry.path} />
         </div>
       )}
