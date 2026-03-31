@@ -1,6 +1,6 @@
 import { API } from "@/api";
 import { FsEntry } from "@/api/fs";
-import { getIcon } from "@/editor/icons/icons";
+import { getIcon } from "@/editor/icons";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
@@ -8,8 +8,8 @@ import { PiCaretRight } from "react-icons/pi";
 
 export function Explorer() {
   return (
-    <div className="w-1/4 h-screen max-h-screen flex-grow bg-ctp-base text-ctp-text text-[15px] border-r border-ctp-surface0 pb-2 overflow-y-auto">
-      <div className="flex flex-row items-center gap-1.5 px-3.5 py-1 bg-ctp-mantle text-ctp-text">
+    <div className="w-1/4 h-full max-h-full flex-grow bg-ctp-base text-ctp-text text-[15px] border-r border-ctp-surface0 pb-2 overflow-y-auto">
+      <div className="flex flex-row items-center gap-1.5 px-3.5 py-1 bg-ctp-mantle text-ctp-lavender font-bold pl-6">
         <p>backend</p>
       </div>
       <ExplorerList path="/home/marti/Workspace/Programming/Cadaide/repos/backend" />

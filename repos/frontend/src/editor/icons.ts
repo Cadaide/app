@@ -2,7 +2,7 @@ import { IconifyIcon } from "@iconify/react";
 import {
   CatppuccinFolderIcons,
   CatppuccinIcons,
-} from "./catppuccin/catppuccin.icons";
+} from "./icons/catppuccin/catppuccin.icons";
 import { isMatch } from "matcher";
 
 export type TIconpack = {

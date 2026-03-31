@@ -1,4 +1,4 @@
-import { TIconpack } from "../icons";
+import { TIconpack } from "../../icons";
 
 export const CatppuccinIcons: TIconpack = [
   // Nest.JS
