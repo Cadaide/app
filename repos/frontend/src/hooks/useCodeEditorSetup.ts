@@ -4,6 +4,7 @@ import { Monaco, useMonaco } from "@monaco-editor/react";
 import type { editor, IRange, IPosition, Uri } from "monaco-editor";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useProjectStore } from "./stores/useProjectStore";
+import { useInmemoryEditorStore } from "./stores/useInmemoryEditorStore";
 
 export function useCodeEditorSetup() {
   const loadedFiles = useProjectStore((state) => state.loadedFiles);
@@ -130,9 +131,18 @@ export function useCodeEditorSetup() {
     });*/
   }, []);
 
-  const onMountHandler = useCallback((editor: editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
-  }, []);
+  const setCursor = useInmemoryEditorStore((state) => state.setCursor);
+
+  const onMountHandler = useCallback(
+    (editor: editor.IStandaloneCodeEditor) => {
+      editorRef.current = editor;
+
+      editor.onDidChangeCursorPosition((e) => {
+        setCursor(e.position.lineNumber, e.position.column);
+      });
+    },
+    [setCursor],
+  );
 
   return {
     beforeMount: beforeMountHandler,

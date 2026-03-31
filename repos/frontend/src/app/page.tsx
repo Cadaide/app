@@ -1,5 +1,6 @@
 "use client";
 
+import { Bottombar } from "@/components/app/Bottombar";
 import { Menubar } from "@/components/app/Menubar";
 import { CodeEditor } from "@/components/editor/CodeEditor";
 import { Explorer } from "@/components/fs/Explorer";
@@ -20,6 +21,7 @@ export default function Page() {
       ) : (
         <HomeScreen />
       )}
+      <Bottombar />
     </div>
   );
 }
