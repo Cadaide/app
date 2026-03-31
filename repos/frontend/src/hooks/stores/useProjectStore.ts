@@ -30,6 +30,13 @@ export const useProjectStore = create<{
       tabs: [],
 
       openProject: async (path: string) => {
+        set({
+          path: null,
+          loadedFiles: [],
+          activeFile: null,
+          tabs: [],
+        });
+
         set({ path, loadedFiles: [] });
 
         await get().loadAllFiles(path);
