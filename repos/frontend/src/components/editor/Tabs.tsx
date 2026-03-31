@@ -1,6 +1,7 @@
 import { getIcon } from "@/editor/icons";
 import { useProjectStore } from "@/hooks/stores/useProjectStore";
 import { Icon } from "@iconify/react";
+import { useEffect, useRef } from "react";
 import { PiX } from "react-icons/pi";
 
 interface ITabsProps {
@@ -24,9 +25,19 @@ function Tab({ file }: { file: ITabsProps["files"][0] }) {
   const activeFile = useProjectStore((state) => state.activeFile);
   const setActiveFile = useProjectStore((state) => state.setActiveFile);
 
+  const tabRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Scroll to active tab
+    if (activeFile === file.path) {
+      tabRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeFile, file.path]);
+
   return (
     <div
-      className={`min-w-48 w-fit flex-shrink-0 whitespace-nowrap flex flex-row items-center gap-1.5 px-3.5 text-[15px] border-b border-ctp-surface0 ${activeFile === file.path ? "bg-ctp-base text-ctp-text border-t-ctp-lavender border-t-1" : "bg-ctp-mantle text-ctp-subtext1  hover:bg-ctp-surface0"} cursor-pointer transition-colors duration-200`}
+      ref={tabRef}
+      className={`min-w-48 w-fit flex-shrink-0 whitespace-nowrap flex flex-row items-center gap-1.5 px-3.5 text-[15px] border-b border-ctp-surface0 ${activeFile === file.path ? "bg-ctp-base text-ctp-text border-t-ctp-lavender border-t-2" : "bg-ctp-mantle text-ctp-subtext1  hover:bg-ctp-surface0"} cursor-pointer transition-colors duration-200`}
       onClick={() => setActiveFile(file.path)}
     >
       <Icon icon={getIcon(file.name)} className="w-5 h-5 flex-shrink-0" />
