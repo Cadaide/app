@@ -1,10 +1,18 @@
 import { registerMonacoThemes } from "@/editor/themes";
 //import { loadProjectTypeContext } from "@/editor/typedefs";
 import { Monaco, useMonaco } from "@monaco-editor/react";
-import type { editor, IRange, IPosition, Uri } from "monaco-editor";
+import {
+  type editor,
+  type IRange,
+  type IPosition,
+  type Uri,
+  KeyMod,
+  KeyCode,
+} from "monaco-editor";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useProjectStore } from "./stores/useProjectStore";
 import { useInmemoryEditorStore } from "./stores/useInmemoryEditorStore";
+import { API } from "@/api";
 
 export function useCodeEditorSetup() {
   const loadedFiles = useProjectStore((state) => state.loadedFiles);
@@ -19,16 +27,49 @@ export function useCodeEditorSetup() {
     [loadedFiles, activeFile],
   );
 
-  // Create Monaco models for all loaded files
+  // Keep a ref of URIs this hook has created so we can clean up stale ones
+  const ownedUrisRef = useRef<Set<string>>(new Set());
+
+  // Create / update Monaco models for loaded files; dispose stale ones
   useEffect(() => {
     if (!monaco) return;
 
+    const currentUris = new Set<string>();
+
     for (const file of loadedFiles) {
       const uri = monaco.Uri.parse(`file://${file.path}`);
+      const uriStr = uri.toString();
+      currentUris.add(uriStr);
 
-      if (!monaco.editor.getModel(uri))
+      const existing = monaco.editor.getModel(uri);
+      if (existing) {
+        // Update content only when it actually changed
+        if (existing.getValue() !== file.content) {
+          existing.setValue(file.content);
+        }
+      } else {
         monaco.editor.createModel(file.content, file.language, uri);
+      }
     }
+
+    // Dispose models that we previously owned but are no longer in loadedFiles
+    for (const oldUri of ownedUrisRef.current) {
+      if (!currentUris.has(oldUri)) {
+        const model = monaco.editor.getModel(monaco.Uri.parse(oldUri));
+        model?.dispose();
+      }
+    }
+
+    ownedUrisRef.current = currentUris;
+
+    // Cleanup: dispose all owned models when the hook unmounts
+    return () => {
+      for (const uriStr of currentUris) {
+        const model = monaco.editor.getModel(monaco.Uri.parse(uriStr));
+        model?.dispose();
+      }
+      ownedUrisRef.current.clear();
+    };
   }, [monaco, loadedFiles]);
 
   // Load type definitions from node_modules when project opens
@@ -139,6 +180,15 @@ export function useCodeEditorSetup() {
 
       editor.onDidChangeCursorPosition((e) => {
         setCursor(e.position.lineNumber, e.position.column);
+      });
+
+      editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, async () => {
+        const content = editor.getValue();
+        const uri = editor.getModel()?.uri;
+
+        if (!uri) return;
+
+        await API.fs.writeFile(uri.path, content);
       });
     },
     [setCursor],

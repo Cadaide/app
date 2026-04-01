@@ -19,6 +19,7 @@ interface FsMicroservice {
       type: string;
     };
   }>;
+  writeFile(data: { path: string; content: string }): Promise<{}>;
 }
 
 @Injectable()
@@ -45,6 +46,12 @@ export class FilesystemService implements OnModuleInit {
 
   async treeDir(path: string, depth: number) {
     const response = await this.fsMicroservice.treeDir({ path, depth });
+
+    return response;
+  }
+
+  async writeFile(path: string, content: string) {
+    const response = await this.fsMicroservice.writeFile({ path, content });
 
     return response;
   }

@@ -35,4 +35,12 @@ export const FsAPI = {
 
     return response.data.entries as FsEntry[];
   },
+  writeFile: async (path: string, content: string) => {
+    const response = await window.api.fetch(`/filesystem/writeFile`, {
+      method: "POST",
+      data: { path, content },
+    });
+
+    return response.data;
+  },
 };

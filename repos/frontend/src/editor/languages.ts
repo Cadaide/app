@@ -28,6 +28,8 @@ const languageNames = {
 };
 
 export function getLanguage(name: string) {
+  if (!name) return "plaintext";
+
   return (
     languagePatterns.find((p) => isMatch(name, p.pattern))?.language ??
     "plaintext"

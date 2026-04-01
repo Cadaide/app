@@ -41,18 +41,31 @@ export const useProjectStore = create<{
 
         await get().loadAllFiles(path);
       },
-      loadFile: (path: string, content: string) =>
-        set({
-          loadedFiles: [
-            ...get().loadedFiles,
-            {
-              path,
-              content,
-              name: pathToName(path),
-              language: getLanguage(pathToName(path)),
-            },
-          ],
-        }),
+      loadFile: (path: string, content: string) => {
+        const existing = get().loadedFiles;
+        const idx = existing.findIndex((f) => f.path === path);
+
+        if (idx !== -1) {
+          // Update content of already-loaded file (only if changed)
+          if (existing[idx].content === content) return;
+          const updated = [...existing];
+          updated[idx] = { ...updated[idx], content };
+          set({ loadedFiles: updated });
+        } else {
+          // Append new file
+          set({
+            loadedFiles: [
+              ...existing,
+              {
+                path,
+                content,
+                name: pathToName(path),
+                language: getLanguage(pathToName(path)),
+              },
+            ],
+          });
+        }
+      },
       loadAllFiles: async (path: string) => {
         const tree = await API.fs.treeDir(path, 10);
 

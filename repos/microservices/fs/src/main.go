@@ -129,6 +129,24 @@ func (s *fsServer) TreeDir(ctx context.Context, req *pb.TreeDirRequest) (*pb.Tre
 	return &pb.TreeDirResponse{Entries: entries}, nil
 }
 
+func (s *fsServer) WriteFile(ctx context.Context, req *pb.WriteFileRequest) (*pb.Empty, error) {
+	file, err := os.OpenFile(req.Path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	_, err = file.Write([]byte(req.Content))
+	if err != nil {
+		return nil, err
+	}
+
+	file.Sync()
+
+	return &pb.Empty{}, nil
+}
+
 func main() {
 	socketPath := "./fs.sock"
 

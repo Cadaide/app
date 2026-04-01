@@ -8,6 +8,7 @@ service FsService {
   rpc ListDir(ListDirRequest) returns (ListDirResponse);
   rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
   rpc TreeDir(TreeDirRequest) returns (TreeDirResponse);
+  rpc WriteFile(WriteFileRequest) returns (Empty);
 }
 
 message ListDirRequest {
@@ -40,3 +41,10 @@ message TreeDirRequest {
 message TreeDirResponse {
   repeated FileEntry entries = 1;
 }
+
+message WriteFileRequest {
+  string path = 1;
+  string content = 2;
+}
+
+message Empty {}
