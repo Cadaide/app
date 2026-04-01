@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import path from 'path';
 import fs from 'fs';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useWebSocketAdapter(new WsAdapter(app));
+
   const socketPath =
     process.env.SOCKET_PATH || path.join(process.cwd(), 'backend.sock');
 
@@ -19,4 +23,4 @@ async function bootstrap() {
   fs.chmodSync(socketPath, '0666');
 }
 
-bootstrap();
+bootstrap()
