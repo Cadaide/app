@@ -14,6 +14,7 @@ export const useProjectStore = create<{
   }[];
   activeFile: string | null;
   tabs: string[];
+  unsavedFiles: Set<string>;
 
   openProject: (path: string) => Promise<void>;
   loadFile: (path: string, content: string) => void;
@@ -21,6 +22,8 @@ export const useProjectStore = create<{
   setActiveFile: (path: string) => void;
   openTab: (path: string) => void;
   closeTab: (path: string) => void;
+  markUnsaved: (path: string) => void;
+  markSaved: (path: string) => void;
 }>()(
   persist(
     (set, get) => ({
@@ -28,6 +31,7 @@ export const useProjectStore = create<{
       loadedFiles: [],
       activeFile: null,
       tabs: [],
+      unsavedFiles: new Set<string>(),
 
       openProject: async (path: string) => {
         set({
@@ -96,6 +100,18 @@ export const useProjectStore = create<{
       },
       closeTab: (path: string) => {
         set({ tabs: get().tabs.filter((tab) => tab !== path) });
+      },
+      markUnsaved: (path: string) => {
+        const next = new Set(get().unsavedFiles);
+
+        next.add(path);
+        set({ unsavedFiles: next });
+      },
+      markSaved: (path: string) => {
+        const next = new Set(get().unsavedFiles);
+
+        next.delete(path);
+        set({ unsavedFiles: next });
       },
     }),
     {

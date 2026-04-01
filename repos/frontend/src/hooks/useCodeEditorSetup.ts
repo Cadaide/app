@@ -43,6 +43,10 @@ export function useCodeEditorSetup() {
 
       const existing = monaco.editor.getModel(uri);
       if (existing) {
+        // Don't overwrite the Monaco model if the file has unsaved changes —
+        // the editor is the source of truth for dirty files.
+        if (useProjectStore.getState().unsavedFiles.has(file.path)) continue;
+
         // Update content only when it actually changed
         if (existing.getValue() !== file.content) {
           existing.setValue(file.content);
@@ -61,16 +65,18 @@ export function useCodeEditorSetup() {
     }
 
     ownedUrisRef.current = currentUris;
+  }, [monaco, loadedFiles]);
 
-    // Cleanup: dispose all owned models when the hook unmounts
+  // Cleanup: dispose all owned models only when the component unmounts
+  useEffect(() => {
     return () => {
-      for (const uriStr of currentUris) {
-        const model = monaco.editor.getModel(monaco.Uri.parse(uriStr));
+      for (const uriStr of ownedUrisRef.current) {
+        const model = monaco?.editor.getModel(monaco.Uri.parse(uriStr));
         model?.dispose();
       }
       ownedUrisRef.current.clear();
     };
-  }, [monaco, loadedFiles]);
+  }, [monaco]);
 
   // Load type definitions from node_modules when project opens
   /*useEffect(() => {
@@ -170,6 +176,16 @@ export function useCodeEditorSetup() {
         return true;
       },
     });*/
+
+    /*monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      allowJs: true,
+      allowSyntheticDefaultImports: true,
+      esModuleInterop: true,
+    });
+
+    monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);*/
   }, []);
 
   const setCursor = useInmemoryEditorStore((state) => state.setCursor);
@@ -182,6 +198,13 @@ export function useCodeEditorSetup() {
         setCursor(e.position.lineNumber, e.position.column);
       });
 
+      editor.onDidChangeModelContent(() => {
+        const uri = editor.getModel()?.uri;
+        if (uri) {
+          useProjectStore.getState().markUnsaved(uri.path);
+        }
+      });
+
       editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyS, async () => {
         const content = editor.getValue();
         const uri = editor.getModel()?.uri;
@@ -189,6 +212,7 @@ export function useCodeEditorSetup() {
         if (!uri) return;
 
         await API.fs.writeFile(uri.path, content);
+        useProjectStore.getState().markSaved(uri.path);
       });
     },
     [setCursor],

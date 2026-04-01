@@ -18,7 +18,6 @@ export function CodeEditor() {
       <Editor
         {...setupProps}
         theme="catpuccin-mocha"
-        language="typescript"
         height="100%"
         options={{
           fontSize: 18,

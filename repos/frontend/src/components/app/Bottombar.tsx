@@ -1,4 +1,4 @@
-import { getLanguage, getLanguageName } from "@/editor/languages";
+import { getDisplayLanguage, getLanguageName } from "@/editor/languages";
 import { useInmemoryEditorStore } from "@/hooks/stores/useInmemoryEditorStore";
 import { useProjectStore } from "@/hooks/stores/useProjectStore";
 
@@ -13,7 +13,7 @@ export function Bottombar() {
         <p>
           Ln {cursorPosition.line}, Col {cursorPosition.column}
         </p>
-        <p>{getLanguageName(getLanguage(activeFile!))}</p>
+        <p>{getLanguageName(getDisplayLanguage(activeFile!))}</p>
       </div>
     </div>
   );
