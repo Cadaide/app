@@ -25,7 +25,7 @@ export function CodeEditor(props: ICodeEditorProps) {
 
   return (
     <div className="w-full h-full">
-      <Editor {...editorProps} />
+      <Editor {...editorProps} loading={null} />
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function Expandable(props: IExpandableProps) {
           className={`w-4 h-4 shrink-0 text-ctp-lavender transition-transform ${isExpanded ? "rotate-90" : ""}`}
         />
         {props.isLoading ? (
-          <LoadingSpinner />
+          <LoadingSpinner size="sm" />
         ) : (
           <>
             {isExpanded && props.expandedIcon && (
