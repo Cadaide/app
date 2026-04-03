@@ -1,10 +1,18 @@
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
-import { CodeEditor } from "../editor/CodeEditor";
 import { SidebarTabView } from "../views/SidebarTabView";
 import { SidebarView } from "../views/SidebarView";
 import { TabbarView } from "../views/TabbarView";
 import { Bottombar } from "./Bottombar";
 import { Menubar } from "./Menubar";
+import dynamic from "next/dynamic";
+
+const CodeEditor = dynamic(
+  async () => (await import("../editor/CodeEditor")).CodeEditor,
+  {
+    loading: () => <div>Loading...</div>,
+    ssr: false,
+  }
+);
 
 export function AppShell() {
   const workspace = useWorkspaceState((state) => state.workspace);

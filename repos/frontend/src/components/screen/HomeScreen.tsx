@@ -1,16 +1,11 @@
-import { useProjectStore } from "@/hooks/stores/useProjectStore";
 import { useCallback } from "react";
 import { PiFolderOpen } from "react-icons/pi";
 
 export function HomeScreen() {
-  const open = useProjectStore((state) => state.openProject);
-
   const handleOpenProject = useCallback(async () => {
     const path = await window.api.openSelectDirectoryDialog();
     if (!path) return;
-
-    open(path);
-  }, [open]);
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center bg-ctp-base text-ctp-text">
