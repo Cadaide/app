@@ -5,16 +5,20 @@
     "files": [
       "dist/index.js",
       "dist/preload.js",
-      "resources/**/*",
       "package.json"
     ],
-    "asarUnpack": [
-      "resources/**/*"
-    ]
+    "nsis": {
+      "oneClick": true
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
   },
   "private": true,
   "version": "0.0.1",
-  "description": "",
+  "description": "Cadaide code editor",
   "author": "Martin Petr <me@martinpetr.dev>",
   "homepage": "https://cadaide.martinpetr.dev",
   "scripts": {
@@ -24,7 +28,8 @@
     "@types/bun": "latest",
     "@types/discord-rpc": "^4.0.10",
     "@types/node": "^25.5.0",
-    "electron": "^41.1.0"
+    "electron": "^41.1.0",
+    "node": "22.14.0"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -34,6 +39,8 @@
     "discord-rpc": "^4.0.1"
   },
   "trustedDependencies": [
+    "electron",
+    "node",
     "register-scheme"
   ]
 }

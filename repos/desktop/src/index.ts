@@ -24,6 +24,7 @@ function createWindow() {
       preload: path.join(app.getAppPath(), "dist/preload.js"),
       devTools: true,
     },
+    frame: false,
   });
 
   win.loadURL("http://localhost:3000");

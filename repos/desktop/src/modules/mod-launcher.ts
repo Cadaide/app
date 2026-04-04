@@ -30,10 +30,11 @@ const configurations: {
         cwd: path.join(getResourcesPath(), "resources/backend"),
         env: {
           ...process.env,
+          PATH: `${process.env.PATH};${path.join(getResourcesPath(), "resources/binaries")}`,
           NODE_ENV: "production",
           FS_BINARY_PATH: path.join(
             getResourcesPath(),
-            "resources/binaries/microservices/fs",
+            "resources/binaries/microservices/fs.exe",
           ),
         },
       }
@@ -52,9 +53,14 @@ const configurations: {
   [ModLauncherProfile.Frontend]: isProd
     ? {
         command: "node",
-        args: ["node_modules/next/dist/bin/next", "start", "-p", "3000"],
+        args: [".next/standalone/server.js"],
         cwd: path.join(getResourcesPath(), "resources/frontend"),
-        env: { ...process.env, NODE_ENV: "production" },
+        env: {
+          ...process.env,
+          PATH: `${process.env.PATH};${path.join(getResourcesPath(), "resources/binaries")}`,
+          NODE_ENV: "production",
+          HOSTNAME: "127.0.0.1",
+        },
       }
     : {
         command: "bun",
