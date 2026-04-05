@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { ChildProcess, spawn } from 'child_process';
 import { randomUUID } from 'crypto';
-import { createInterface } from 'readline';
 
 interface IPendingRequest {
   resolve: (value: any) => void;
@@ -19,6 +18,7 @@ export const RPC_BINARY = 'RPC_BINARY';
 export class RPCService implements OnModuleInit, OnModuleDestroy {
   #process: ChildProcess;
   #pendingRequests: Map<string, IPendingRequest> = new Map();
+  #buffer = '';
 
   constructor(@Inject(RPC_BINARY) private readonly binaryPath: string) {}
 
@@ -27,9 +27,20 @@ export class RPCService implements OnModuleInit, OnModuleDestroy {
       stdio: ['pipe', 'pipe', 'inherit'],
     });
 
-    const rl = createInterface({ input: this.#process.stdout! });
+    this.#process.stdout!.setEncoding('utf8');
 
-    rl.on('line', this.#processLine.bind(this));
+    this.#process.stdout!.on('data', (chunk: string) => {
+      this.#buffer += chunk;
+
+      let newlineIndex: number;
+      while ((newlineIndex = this.#buffer.indexOf('\n')) !== -1) {
+        const line = this.#buffer.slice(0, newlineIndex);
+
+        this.#buffer = this.#buffer.slice(newlineIndex + 1);
+        this.#processLine(line);
+      }
+    });
+
     this.#process.on('exit', (code) => {
       console.error('RPC process exited with code:', code);
 
@@ -56,7 +67,7 @@ export class RPCService implements OnModuleInit, OnModuleDestroy {
   }
 
   #processLine(line: string) {
-    if (!line) return;
+    if (!line.trim()) return;
 
     try {
       const response = JSON.parse(line);

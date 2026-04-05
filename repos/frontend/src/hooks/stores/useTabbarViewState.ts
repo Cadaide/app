@@ -7,12 +7,14 @@ export const useTabbarViewState = create<{
     path: string;
     icon: string | IconifyIcon;
     name: string;
+    dirty: boolean;
   }[];
   activeTabPath: string | null;
 
   addTab: (path: string, icon: string | IconifyIcon, name: string) => void;
   removeTab: (path: string) => void;
   setActiveTab: (path: string) => void;
+  setDirty: (path: string, dirty: boolean) => void;
 }>()(
   persist(
     (set, get) => ({
@@ -31,7 +33,7 @@ export const useTabbarViewState = create<{
         }
 
         set((state) => ({
-          tabs: [...state.tabs, { path, icon, name }],
+          tabs: [...state.tabs, { path, icon, name, dirty: false }],
           activeTabPath: path,
         }));
       },
@@ -45,9 +47,22 @@ export const useTabbarViewState = create<{
         set({
           activeTabPath: id,
         }),
+      setDirty: (path, dirty) =>
+        set((state) => ({
+          tabs: state.tabs.map((tab) =>
+            tab.path === path ? { ...tab, dirty } : tab,
+          ),
+        })),
     }),
     {
       name: "tabbar-view-state",
+      partialize: (state) => ({
+        tabs: state.tabs.map((tab) => ({
+          ...tab,
+          dirty: false,
+        })),
+        activeTabPath: state.activeTabPath,
+      }),
     },
   ),
 );

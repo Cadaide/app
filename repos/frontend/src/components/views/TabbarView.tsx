@@ -1,13 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { Icon, IconifyIcon } from "@iconify/react";
-import { PiX } from "react-icons/pi";
+import { PiCircle, PiCircleFill, PiX } from "react-icons/pi";
 
 interface TabbarViewItemProps {
   path: string;
   name: string;
   icon: IconifyIcon | string;
   isActive: boolean;
+  isDirty: boolean;
 }
 
 export function TabbarView() {
@@ -28,6 +29,7 @@ export function TabbarView() {
           name={tab.name}
           icon={tab.icon}
           isActive={tab.path === activeTabPath}
+          isDirty={tab.dirty}
         />
       ))}
     </div>
@@ -58,6 +60,9 @@ export function TabbarViewItem(props: TabbarViewItemProps) {
     >
       <Icon icon={props.icon} className="w-5 h-5 shrink-0" />
       <p className="whitespace-nowrap">{props.name}</p>
+      {props.isDirty && (
+        <PiCircleFill className="w-3 h-3 shrink-0 text-ctp-lavender" />
+      )}
       <PiX
         onClick={(e) => {
           e.preventDefault();

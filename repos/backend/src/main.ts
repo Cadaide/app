@@ -28,5 +28,4 @@ async function bootstrap() {
 
   fs.chmodSync(socketPath, '0666');*/
 }
-
 bootstrap();

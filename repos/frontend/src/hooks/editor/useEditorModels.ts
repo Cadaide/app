@@ -6,6 +6,8 @@ import { FilesystemFileEntry } from "@/classes/FilesystemFileEntry";
 import type { Workspace } from "@/classes/Workspace";
 import { getLanguage } from "@/editor/languages";
 import { useEditorState } from "../stores/useEditorState";
+import { useTabbarViewState } from "../stores/useTabbarViewState";
+import { API } from "@/api";
 
 interface IEditorModelsProps {
   workspace: Workspace;
@@ -19,6 +21,8 @@ export interface IEditorModelsOutput {
 export function useEditorModels(
   props: IEditorModelsProps,
 ): IEditorModelsOutput {
+  const setTabDirty = useTabbarViewState((state) => state.setDirty);
+
   const onBeforeMount = useCallback(
     async (monaco: Monaco) => {
       for (const model of monaco.editor.getModels()) {
@@ -56,8 +60,25 @@ export function useEditorModels(
   );
 
   const onMount = useCallback(
-    async (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {},
-    [],
+    async (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+      editor.onDidChangeModelContent((event) => {
+        setTabDirty(editor.getModel()?.uri.path ?? "", true);
+      });
+
+      editor.addCommand(
+        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        async () => {
+          const content = editor.getModel()?.getValue();
+          const path = editor.getModel()?.uri.path;
+
+          if (!content || !path) return;
+
+          await API.fs.writeFile(path, content);
+          setTabDirty(path, false);
+        },
+      );
+    },
+    [setTabDirty],
   );
 
   return { onMount, onBeforeMount };
