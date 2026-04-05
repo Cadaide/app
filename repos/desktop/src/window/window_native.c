@@ -1,9 +1,10 @@
 #include "window_native.h"
 
 #ifdef _WIN32
+#include <windows.h>
+
 #include <commctrl.h>
 #include <dwmapi.h>
-#include <windows.h>
 
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))

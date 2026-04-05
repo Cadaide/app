@@ -1,0 +1,58 @@
+package app
+
+import (
+	"cadaide/src/shell"
+	"cadaide/src/window"
+)
+
+func RunInDevMode() {
+	frontendCmd, err := RunFrontendInDevMode()
+	if err != nil {
+		panic(err)
+	}
+
+	defer shell.KillGroup(frontendCmd)
+
+	backendCmd, err := RunBackendInDevMode()
+	if err != nil {
+		panic(err)
+	}
+
+	defer shell.KillGroup(backendCmd)
+
+	w := window.New(window.WindowConfig{
+		Title:  "Cadaide (DEV MODE)",
+		Width:  1280,
+		Height: 720,
+	})
+
+	defer w.Destroy()
+
+	w.Open("http://localhost:3000")
+}
+
+func Run() {
+	frontendCmd, err := RunFrontend()
+	if err != nil {
+		panic(err)
+	}
+
+	defer shell.KillGroup(frontendCmd)
+
+	backendCmd, err := RunBackend()
+	if err != nil {
+		panic(err)
+	}
+
+	defer shell.KillGroup(backendCmd)
+
+	w := window.New(window.WindowConfig{
+		Title:  "Cadaide",
+		Width:  1280,
+		Height: 720,
+	})
+
+	defer w.Destroy()
+
+	w.Open("http://localhost:3000")
+}
