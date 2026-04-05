@@ -6,11 +6,16 @@ export type ShellResult = {
 };
 
 export class Shell {
-  static run(command: string[], cwd: string): ShellResult {
+  static run(
+    command: string[],
+    cwd: string,
+    env?: NodeJS.ProcessEnv,
+  ): ShellResult {
     const proc = spawn(command[0]!, command.slice(1), {
       cwd: cwd,
       env: {
         ...process.env,
+        ...env,
       },
       stdio: "inherit",
     });

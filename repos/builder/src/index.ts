@@ -1,34 +1,51 @@
 import { StepRunner, BuildStep } from "./step";
-import { AppBuildBuildStep } from "./steps/app_build";
-import { BackendBuildBuildStep } from "./steps/backend_build";
-import { BackendCleanBuildStep } from "./steps/backend_clean";
-import { BackendInstallBuildStep } from "./steps/backend_install";
-import { DesktopBuildBuildStep } from "./steps/desktop_build";
-import { DesktopCleanBuildStep } from "./steps/desktop_clean";
-import { DesktopCopyResourcesBuildStep } from "./steps/desktop_copy_resources";
-import { DesktopInstallBuildStep } from "./steps/desktop_install";
-import { FrontendBuildBuildStep } from "./steps/frontend_build";
-import { FrontendCleanBuildStep } from "./steps/frontend_clean";
-import { FrontendInstallBuildStep } from "./steps/frontend_install";
-import { MicroserviceFsBuildBuildStep } from "./steps/microservice_fs_build";
+import { BackendBuild } from "./steps/backend.build";
+import { BackendClean } from "./steps/backend.clean";
+import { BackendInstall } from "./steps/backend.install";
+import { BinariesDownload } from "./steps/binaries.download";
+import { DesktopBuild } from "./steps/desktop.build";
+import { DesktopClean } from "./steps/desktop.clean";
+import { FrontendBuild } from "./steps/frontend.build";
+import { FrontendClean } from "./steps/frontend.clean";
+import { FrontendInstall } from "./steps/frontend.install";
+import { LauncherBuild } from "./steps/launcher.build";
+import { MicroserviceFsBuild } from "./steps/microservice_fs.build";
+import { MicroserviceFsClean } from "./steps/microservice_fs.clean";
+import { ModulesCopy } from "./steps/modules.copy";
+import { OutputPrepare } from "./steps/output.prepare";
+import { PackageZip } from "./steps/package.zip";
 
 const steps: (new () => BuildStep)[] = [
-  BackendCleanBuildStep,
-  FrontendCleanBuildStep,
-  DesktopCleanBuildStep,
+  // prepare
+  OutputPrepare,
 
-  BackendInstallBuildStep,
-  FrontendInstallBuildStep,
-  DesktopInstallBuildStep,
+  // clean
+  FrontendClean,
+  BackendClean,
+  MicroserviceFsClean,
+  DesktopClean,
 
-  BackendBuildBuildStep,
-  MicroserviceFsBuildBuildStep,
-  FrontendBuildBuildStep,
-  DesktopBuildBuildStep,
+  // install
+  FrontendInstall,
+  BackendInstall,
 
-  DesktopCopyResourcesBuildStep,
+  // build modules
+  FrontendBuild,
+  BackendBuild,
+  MicroserviceFsBuild,
+  DesktopBuild,
 
-  AppBuildBuildStep,
+  // copy modules
+  ModulesCopy,
+
+  // download binaries
+  BinariesDownload,
+
+  // convert pkg to zip
+  PackageZip,
+
+  // build launcher
+  LauncherBuild,
 ];
 
 await new StepRunner(steps).runAll();

@@ -1,3 +1,4 @@
+import { BuildConfig } from "./config";
 import { Logger } from "./logger";
 
 export abstract class BuildStep {
@@ -28,6 +29,8 @@ export class StepRunner {
   }
 
   async runAll() {
+    this.#logger.info(`Starting build for ${BuildConfig.platform}`);
+
     for (const step of this.#steps) {
       await this.#runStep(step);
     }
