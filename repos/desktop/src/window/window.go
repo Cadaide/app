@@ -10,27 +10,10 @@ import (
 )
 
 /*
-#cgo windows LDFLAGS: -luser32
+#cgo windows LDFLAGS: -luser32 -ldwmapi -lcomctl32
 #cgo linux pkg-config: gtk+-3.0
 
-#ifdef _WIN32
-#include <windows.h>
-
-void make_frameless(void* hwnd) {
-    HWND h = (HWND)hwnd;
-    LONG style = GetWindowLong(h, GWL_STYLE);
-    style &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
-    SetWindowLong(h, GWL_STYLE, style);
-    SetWindowPos(h, NULL, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-}
-#else
-#include <gtk/gtk.h>
-
-void make_frameless(void* widget) {
-    gtk_window_set_decorated(GTK_WINDOW(widget), FALSE);
-}
-#endif
+#include "window_native.h"
 */
 import "C"
 
@@ -97,9 +80,40 @@ func New(config WindowConfig) *Window {
 		return pickFolder()
 	})
 
+	wv.Bind("__beginWindowDrag", func(x, y int) {
+		handle := wv.Window()
+		C.begin_drag(unsafe.Pointer(handle), C.int(x), C.int(y))
+	})
+
+	wv.Bind("__windowClose", func() {
+		C.window_close(unsafe.Pointer(wv.Window()))
+	})
+
+	wv.Bind("__windowMinimize", func() {
+		C.window_minimize(unsafe.Pointer(wv.Window()))
+	})
+
+	wv.Bind("__windowMaximize", func() {
+		C.window_maximize(unsafe.Pointer(wv.Window()))
+	})
+
+	wv.Bind("__windowRestore", func() {
+		C.window_restore(unsafe.Pointer(wv.Window()))
+	})
+
+	wv.Bind("__windowIsMaximized", func() int {
+		return int(C.window_is_maximized(unsafe.Pointer(wv.Window())))
+	})
+
 	wv.Init(`
     window.api = {
-        openSelectDirectoryDialog: () => window.__openFolderPicker()
+        openSelectDirectoryDialog: () => window.__openFolderPicker(),
+			beginWindowDrag: (x, y) => window.__beginWindowDrag(x, y),
+			windowClose: () => window.__windowClose(),
+			windowMinimize: () => window.__windowMinimize(),
+			windowMaximize: () => window.__windowMaximize(),
+			windowRestore: () => window.__windowRestore(),
+			windowIsMaximized: () => window.__windowIsMaximized(),
     }
 `)
 
@@ -122,7 +136,7 @@ func (w *Window) Open(url string) {
 	// Make frameless must run on UI thread
 	w.webview.Dispatch(func() {
 		handle := w.webview.Window()
-		C.make_frameless(unsafe.Pointer(handle))
+		C.make_window_frameless(unsafe.Pointer(handle))
 	})
 
 	w.webview.Run()

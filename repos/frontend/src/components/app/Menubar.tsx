@@ -1,5 +1,11 @@
 import { PiCards, PiMinus, PiX } from "react-icons/pi";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
 import { Workspace } from "@/classes/Workspace";
 
@@ -37,6 +43,34 @@ export function Menubar() {
 
     setWorkspace(new Workspace(path));
   }, [setWorkspace]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button != 0) return;
+
+    const target = e.target as HTMLElement;
+    if (target.closest(".no-drag")) return;
+
+    window.api.beginWindowDrag(e.clientX, e.clientY);
+  }, []);
+
+  const toggleMaximize = useCallback(async () => {
+    if (await window.api.windowIsMaximized()) {
+      await window.api.windowRestore();
+      return;
+    }
+
+    await window.api.windowMaximize();
+  }, []);
+
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest(".no-drag")) return;
+
+      void toggleMaximize();
+    },
+    [toggleMaximize],
+  );
 
   const MENUS: MenuDefinition[] = useMemo(
     () => [
@@ -84,10 +118,12 @@ export function Menubar() {
   return (
     <div
       ref={menubarRef}
+      onMouseDown={handleMouseDown}
+      onDoubleClick={handleDoubleClick}
       className="w-full h-10 bg-ctp-crust text-ctp-text text-sm border-b border-ctp-surface0 flex flex-row items-center gap-1.5 px-3.5 drag-handle"
     >
-      <p className="mr-4 font-semibold select-none">Cadaide</p>
-      <div className="flex flex-row gap-0.5 mr-auto">
+      <p className="mr-4 font-semibold select-none no-drag">Cadaide</p>
+      <div className="flex flex-row gap-0.5 mr-auto no-drag">
         {MENUS.map((menu, i) => (
           <MenubarItem
             key={menu.label}
@@ -101,21 +137,34 @@ export function Menubar() {
           />
         ))}
       </div>
-      <WindowButtons />
+      <WindowButtons onToggleMaximize={toggleMaximize} />
     </div>
   );
 }
 
-function WindowButtons() {
+function WindowButtons({
+  onToggleMaximize,
+}: {
+  onToggleMaximize: () => Promise<void>;
+}) {
   return (
-    <div className="flex flex-row gap-1">
-      <div className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200">
+    <div className="flex flex-row gap-1 no-drag">
+      <div
+        className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200"
+        onClick={() => window.api.windowMinimize()}
+      >
         <PiMinus className="text-lg" />
       </div>
-      <div className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200">
+      <div
+        className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200"
+        onClick={() => void onToggleMaximize()}
+      >
         <PiCards className="text-lg" />
       </div>
-      <div className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200">
+      <div
+        className="p-1.5 hover:bg-ctp-surface0 cursor-pointer transition-colors rounded-full duration-200"
+        onClick={() => window.api.windowClose()}
+      >
         <PiX className="text-lg" />
       </div>
     </div>
