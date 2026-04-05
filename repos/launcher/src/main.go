@@ -30,7 +30,7 @@ var (
 )
 
 func main() {
-	f, _ := os.OpenFile("cadaide.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	f, _ := os.OpenFile("launcher.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	defer f.Close()
 	log.SetOutput(f)
 
@@ -76,9 +76,7 @@ func main() {
 		binary = "cadaide"
 	}
 
-	runCommand([]string{"./" + binary}, "/desktop", map[string]string{
-		"APPDIR": appdirPath,
-	}, false)
+	runCommand([]string{"./" + binary}, "/desktop", nil, false)
 }
 
 func extractPkg(dir string) (string, error) {
