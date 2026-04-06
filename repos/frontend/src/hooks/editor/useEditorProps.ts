@@ -14,6 +14,41 @@ export function useEditorProps(props: {
 }) {
   const onBeforeMount = useCallback(
     async (monaco: Monaco) => {
+      // Disable all built-in Monaco TS/JS language features so the external
+      // LSP server is the sole provider of intelligence.
+      const ts = monaco.languages.typescript;
+
+      const disabledModeConfig = {
+        completionItems: false,
+        hovers: false,
+        documentSymbols: false,
+        definitions: false,
+        references: false,
+        documentHighlights: false,
+        rename: false,
+        diagnostics: false,
+        documentRangeFormattingEdits: false,
+        signatureHelp: false,
+        onTypeFormattingEdits: false,
+        codeActions: false,
+        inlayHints: false,
+      };
+
+      ts.typescriptDefaults.setModeConfiguration(disabledModeConfig);
+      ts.javascriptDefaults.setModeConfiguration(disabledModeConfig);
+
+      ts.typescriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: true,
+        noSuggestionDiagnostics: true,
+      });
+
+      ts.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: true,
+        noSuggestionDiagnostics: true,
+      });
+
       props.theme.onBeforeMount(monaco);
       await props.models.onBeforeMount(monaco);
     },
@@ -25,6 +60,8 @@ export function useEditorProps(props: {
       props.models.onMount(editor, monaco);
       props.singleton.onMount(editor, monaco);
       props.lsp.onMount(editor, monaco);
+
+      editor.updateOptions({});
     },
     [props.models, props.singleton, props.lsp],
   );

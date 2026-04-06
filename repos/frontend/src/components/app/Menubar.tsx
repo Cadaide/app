@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
 import { Workspace } from "@/classes/Workspace";
+import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 
 type MenuEntry =
   | {
@@ -29,20 +30,29 @@ export function Menubar() {
   const menubarRef = useRef<HTMLDivElement>(null);
 
   const setWorkspace = useWorkspaceState((state) => state.setWorkspace);
+  const closeTabs = useTabbarViewState((state) => state.closeTabs);
 
   const handleOpenProject = useCallback(async () => {
     const path = await window.api.openSelectDirectoryDialog();
     if (!path) return;
 
     setWorkspace(new Workspace(path));
-  }, [setWorkspace]);
+    closeTabs();
+
+    // TODO: Reload without reloading
+    location.reload();
+  }, [setWorkspace, closeTabs]);
 
   const handleOpenProjectPI = useCallback(async () => {
     const path = prompt("Enter path to project:");
     if (!path) return;
 
     setWorkspace(new Workspace(path));
-  }, [setWorkspace]);
+    closeTabs();
+
+    // TODO: Reload without reloading
+    location.reload();
+  }, [setWorkspace, closeTabs]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button != 0) return;

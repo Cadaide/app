@@ -16,6 +16,7 @@ export const useTabbarViewState = create<{
   removeTab: (path: string) => void;
   setActiveTab: (path: string) => void;
   setDirty: (path: string, dirty: boolean) => void;
+  closeTabs: () => void;
 }>()(
   persist(
     (set, get) => ({
@@ -65,6 +66,7 @@ export const useTabbarViewState = create<{
             tab.path === path ? { ...tab, dirty } : tab,
           ),
         })),
+      closeTabs: () => set({ tabs: [], activeTabPath: null }),
     }),
     {
       name: "tabbar-view-state",

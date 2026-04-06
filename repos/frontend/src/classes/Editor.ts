@@ -116,9 +116,9 @@ export class Editor {
   }
 
   async openFile(path: string | null) {
-    if (!path) {
-      if (!this.#editorMounted) return;
+    if (!this.#editorMounted) return;
 
+    if (!path) {
       this.editor.setModel(null);
 
       return;

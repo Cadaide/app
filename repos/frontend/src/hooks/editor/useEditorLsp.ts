@@ -6,6 +6,8 @@ import { LspClient } from "@/classes/LspClient";
 import type { Workspace } from "@/classes/Workspace";
 import { Editor } from "@/classes/Editor";
 import { EditorHook, EditorHookId } from "@/classes/EditorHook";
+import { getLspLanguage } from "@/editor/languages";
+import { pathToName } from "@/utils/files/file";
 
 export interface IEditorLspOutput {
   onMount: (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => void;
@@ -46,7 +48,7 @@ export function useEditorLsp(workspace: Workspace): IEditorLspOutput {
         for (const file of files) {
           client.sendDidOpen(
             file.uri.toString(),
-            file.getLanguageId(),
+            getLspLanguage(pathToName(file.uri.path)),
             file.getValue(),
           );
         }
@@ -55,7 +57,7 @@ export function useEditorLsp(workspace: Workspace): IEditorLspOutput {
           new EditorHook(EditorHookId.EditorOpen, ({ path, model }) => {
             client.sendDidOpen(
               model.uri.toString(),
-              model.getLanguageId(),
+              getLspLanguage(pathToName(path)),
               model.getValue(),
             );
           }),

@@ -7,6 +7,7 @@ import { Menubar } from "./Menubar";
 import dynamic from "next/dynamic";
 import { LoadingScreen } from "../base/LoadingScreen";
 
+
 const CodeEditor = dynamic(
   async () => (await import("../editor/CodeEditor")).CodeEditor,
   {

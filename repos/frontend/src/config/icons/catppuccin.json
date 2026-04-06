@@ -120,6 +120,14 @@
     {
       "pattern": "*.txt",
       "icon": "catppuccin:text"
+    },
+    {
+      "pattern": "*.tsx",
+      "icon": "catppuccin:typescript-react"
+    },
+    {
+      "pattern": "*.jsx",
+      "icon": "catppuccin:javascript-react"
     }
   ],
   "folders": [

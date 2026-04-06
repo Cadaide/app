@@ -155,8 +155,25 @@ export class LspClient {
       processId: null,
       clientInfo: { name: "Cadaide LSP Client" },
       rootUri: this.#options.rootUri,
+      workspaceFolders: [
+        {
+          uri: this.#options.rootUri,
+          name: "Workspace",
+        },
+      ],
+      initializationOptions: {
+        typescript: {
+          tsdk: "./node_modules/typescript/lib",
+        },
+        vtsls: {
+          autoUseWorkspaceTsdk: true,
+        },
+      },
       capabilities: {
         textDocument: {
+          publishDiagnostics: {
+            relatedInformation: true,
+          },
           synchronization: {
             dynamicRegistration: false,
             didSave: true,
