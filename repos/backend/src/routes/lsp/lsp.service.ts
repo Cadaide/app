@@ -19,6 +19,8 @@ export class LspService {
     const languageConfig = LanguageConfig[language];
     const lspProcess = await this.#spawnLsp(languageConfig);
 
+    console.log('LSP::START', language);
+
     this.#sessions.set(client, { language, process: lspProcess });
 
     // LSP stdout → WebSocket klient
@@ -66,11 +68,15 @@ export class LspService {
     client.on('close', () => {
       this.#sessions.delete(client);
       lspProcess.kill();
+
+      console.log('LSP::STOP', language);
     });
 
     lspProcess.on('close', () => {
       if (client.readyState === WebSocket.OPEN) client.close();
       this.#sessions.delete(client);
+
+      console.log('LSP::STOP', language);
     });
   }
 

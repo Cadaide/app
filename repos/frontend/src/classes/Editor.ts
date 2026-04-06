@@ -4,6 +4,7 @@ import { pathToName } from "@/utils/files/file";
 import { API } from "@/api";
 import { EditorHook, EditorHookId } from "./EditorHook";
 import { getLanguage } from "@/editor/languages";
+import { LspManager } from "./LspManager";
 
 export class Editor {
   static #instance: Editor;
@@ -23,6 +24,8 @@ export class Editor {
   #initializedListeners: (() => void)[] = [];
 
   #hooks: EditorHook[] = [];
+
+  readonly lsp: LspManager = new LspManager();
 
   constructor() {}
 
@@ -141,6 +144,7 @@ export class Editor {
     }
 
     this.editor.setModel(model);
+    this.lsp.notifyFileOpen(model);
 
     this.notifyHook(EditorHookId.EditorOpen, { path, model });
 
