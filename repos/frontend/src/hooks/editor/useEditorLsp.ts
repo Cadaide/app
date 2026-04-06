@@ -4,6 +4,8 @@ import * as monaco from "monaco-editor";
 import { useCallback, useRef } from "react";
 import { LspClient } from "@/classes/LspClient";
 import type { Workspace } from "@/classes/Workspace";
+import { Editor } from "@/classes/Editor";
+import { EditorHook, EditorHookId } from "@/classes/EditorHook";
 
 export interface IEditorLspOutput {
   onMount: (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => void;
@@ -48,6 +50,16 @@ export function useEditorLsp(workspace: Workspace): IEditorLspOutput {
             file.getValue(),
           );
         }
+
+        Editor.instance.registerHook(
+          new EditorHook(EditorHookId.EditorOpen, ({ path, model }) => {
+            client.sendDidOpen(
+              model.uri.toString(),
+              model.getLanguageId(),
+              model.getValue(),
+            );
+          }),
+        );
       });
     },
     [workspace],

@@ -1,6 +1,8 @@
 export enum EditorHookId {
   ModelChange = "model.change",
   EditorSave = "editor.save",
+  EditorOpen = "editor.open",
+  EditorClose = "editor.close",
 }
 
 export class EditorHook {

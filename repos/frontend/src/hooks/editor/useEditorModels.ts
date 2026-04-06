@@ -21,32 +21,7 @@ export function useEditorModels(
 ): IEditorModelsOutput {
   const onBeforeMount = useCallback(
     async (monaco: Monaco) => {
-      for (const model of monaco.editor.getModels()) {
-        model.dispose();
-      }
       Editor.instance.clearModels();
-
-      const entries = await props.workspace.filesystem.root.tree();
-
-      await Promise.all(
-        entries.map(async (entry) => {
-          if (!(entry instanceof FilesystemFileEntry)) return;
-
-          const content = await entry.read();
-          const normalizedPath = entry.path.replaceAll("\\", "/");
-          const fileUri = monaco.Uri.file(normalizedPath);
-
-          const model = monaco.editor.createModel(
-            content,
-            getLanguage(entry.name),
-            fileUri,
-          );
-
-          Editor.instance.addModel(model);
-        }),
-      );
-
-      Editor.instance.markModelsLoaded();
     },
     [props.workspace],
   );

@@ -1,3 +1,4 @@
+import { Editor } from "@/classes/Editor";
 import { IconifyIcon } from "@iconify/react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

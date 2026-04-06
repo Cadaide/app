@@ -118,7 +118,7 @@ export function TabbarViewDirtyIndicatorCloseButton(
           size={14}
         />
       ) : (
-        <PiX className="w-2.5 h-2.5 shrink-0" />
+        <PiX className="w-4 h-4 shrink-0" />
       )}
     </button>
   );

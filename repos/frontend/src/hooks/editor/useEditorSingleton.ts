@@ -1,7 +1,7 @@
 import { Editor } from "@/classes/Editor";
 import { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTabbarViewState } from "../stores/useTabbarViewState";
 
 export interface IEditorSingletonOutput {
@@ -10,10 +10,26 @@ export interface IEditorSingletonOutput {
 
 export function useEditorSingleton(): IEditorSingletonOutput {
   const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
+  const tabs = useTabbarViewState((state) => state.tabs);
+
+  const prevTabs = useRef(tabs);
+
+  useEffect(() => {
+    if (prevTabs.current.length > tabs.length) {
+      const removedTab = prevTabs.current.find(
+        (tab) => !tabs.some((t) => t.path === tab.path),
+      );
+
+      if (removedTab) Editor.instance.closeFile(removedTab.path);
+    }
+
+    prevTabs.current = tabs;
+  }, [tabs]);
 
   const onMount = useCallback(
     (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
       Editor.instance.editor = editor;
+      Editor.instance.monaco = monaco;
 
       Editor.instance.markEditorMounted();
     },

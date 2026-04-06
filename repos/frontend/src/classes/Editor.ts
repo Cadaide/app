@@ -3,6 +3,7 @@ import * as monaco from "monaco-editor";
 import { pathToName } from "@/utils/files/file";
 import { API } from "@/api";
 import { EditorHook, EditorHookId } from "./EditorHook";
+import { getLanguage } from "@/editor/languages";
 
 export class Editor {
   static #instance: Editor;
@@ -14,9 +15,9 @@ export class Editor {
   }
 
   #editor: editor.IStandaloneCodeEditor | null = null;
+  #monaco: typeof monaco | null = null;
   #models: Map<string, editor.ITextModel> = new Map();
 
-  #modelsLoaded: boolean = false;
   #editorMounted: boolean = false;
 
   #initializedListeners: (() => void)[] = [];
@@ -29,10 +30,20 @@ export class Editor {
     this.#editor = editor;
   }
 
+  set monaco(m: typeof monaco) {
+    this.#monaco = m;
+  }
+
   get editor(): editor.IStandaloneCodeEditor {
     if (!this.#editor) throw new Error("Editor not initialized");
 
     return this.#editor;
+  }
+
+  get monaco(): typeof monaco {
+    if (!this.#monaco) throw new Error("Monaco not initialized");
+
+    return this.#monaco;
   }
 
   addModel(model: editor.ITextModel) {
@@ -42,6 +53,10 @@ export class Editor {
   }
 
   clearModels() {
+    this.#models.forEach((model) => {
+      model.dispose();
+    });
+
     this.#models.clear();
   }
 
@@ -60,12 +75,6 @@ export class Editor {
     };
   }
 
-  markModelsLoaded() {
-    this.#modelsLoaded = true;
-
-    this.#notifyIfInitialized();
-  }
-
   markEditorMounted() {
     this.#editorMounted = true;
 
@@ -73,7 +82,7 @@ export class Editor {
   }
 
   #notifyIfInitialized() {
-    if (this.#modelsLoaded && this.#editorMounted) {
+    if (this.#editorMounted) {
       this.#initializedListeners.forEach((listener) => {
         listener();
       });
@@ -106,7 +115,7 @@ export class Editor {
     hooks.forEach((hook) => this.disposeHook(hook));
   }
 
-  openFile(path: string | null) {
+  async openFile(path: string | null) {
     if (!path) {
       if (!this.#editorMounted) return;
 
@@ -117,13 +126,36 @@ export class Editor {
 
     const normalizedPath = path.replaceAll("\\", "/");
     const fileUri = monaco.Uri.file(normalizedPath);
-    const model = this.getModel(fileUri.toString());
+    let model = this.getModel(fileUri.toString());
 
-    if (!model) return;
+    if (!model) {
+      const content = await API.fs.readFile(path);
+
+      model = this.monaco.editor.createModel(
+        content,
+        getLanguage(pathToName(path)),
+        fileUri,
+      );
+
+      this.addModel(model);
+    }
 
     this.editor.setModel(model);
 
+    this.notifyHook(EditorHookId.EditorOpen, { path, model });
+
     //window.api.setActivity(pathToName(path));
+  }
+
+  async closeFile(path: string) {
+    const model = this.getModel(path);
+
+    if (!model) return;
+
+    // TODO: Add dirty warning
+
+    model.dispose();
+    this.#models.delete(path);
   }
 
   async saveFile(path: string, content: string) {
