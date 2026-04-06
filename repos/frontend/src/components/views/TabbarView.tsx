@@ -82,7 +82,7 @@ export function TabbarViewItem(props: ITabbarViewItemProps) {
     <div
       ref={ref}
       onClick={() => setActiveTab(props.path)}
-      className={`w-fit pt-1 pb-[11px] group-hover:pb-0 shrink-0 h-full flex flex-row items-center gap-2 px-4 cursor-pointer transition-colors duration-150 ${props.isActive ? "bg-ctp-mantle border-t-2 border-ctp-lavender" : "bg-ctp-mantle/50 hover:bg-ctp-surface0 border-t-2 border-transparent"}`}
+      className={`w-fit shrink-0 h-full flex flex-row items-center gap-2 px-4 cursor-pointer transition-colors duration-150 ${props.isActive ? "bg-ctp-mantle border-t-2 border-ctp-lavender" : "bg-ctp-mantle/50 hover:bg-ctp-surface0 border-t-2 border-transparent"}`}
     >
       <Icon icon={props.icon} className="w-5 h-5 shrink-0" />
       <p className="whitespace-nowrap">{props.name}</p>
@@ -114,7 +114,7 @@ export function TabbarViewDirtyIndicatorCloseButton(
     >
       {props.isDirty && !hovered ? (
         <PiCircleFill
-          className="w-1.5 h-1.5 flex text-ctp-lavender shrink-0"
+          className="w-3 h-3 flex text-ctp-lavender shrink-0"
           size={14}
         />
       ) : (

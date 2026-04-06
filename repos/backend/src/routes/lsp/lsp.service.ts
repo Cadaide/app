@@ -18,6 +18,7 @@ export class LspService {
   async createSession(client: WebSocket, language: Language) {
     const languageConfig = LanguageConfig[language];
     const lspProcess = await this.#spawnLsp(languageConfig);
+    if (!lspProcess) return;
 
     console.log('LSP::START', language);
 
@@ -81,6 +82,8 @@ export class LspService {
   }
 
   async #spawnLsp(languageConfig: ILanguageConfig) {
+    if (!languageConfig?.lsp) return;
+
     const { command } = languageConfig.lsp;
 
     const lspProcess = spawn(command[0], command.slice(1));
