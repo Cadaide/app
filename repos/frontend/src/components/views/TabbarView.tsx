@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { Icon, IconifyIcon } from "@iconify/react";
 import { PiCircle, PiCircleFill, PiX } from "react-icons/pi";
+import { EditorHook, EditorHookId } from "@/classes/EditorHook";
+import { Editor } from "@/classes/Editor";
 
 interface TabbarViewItemProps {
   path: string;
@@ -14,6 +16,26 @@ interface TabbarViewItemProps {
 export function TabbarView() {
   const tabs = useTabbarViewState((state) => state.tabs);
   const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
+  const setDirty = useTabbarViewState((state) => state.setDirty);
+
+  useEffect(() => {
+    const modelChangeHook = new EditorHook(
+      EditorHookId.ModelChange,
+      ({ editor }) => setDirty(editor.getModel()?.uri.path ?? "", true),
+    );
+    const editorSaveHook = new EditorHook(
+      EditorHookId.EditorSave,
+      ({ path }) => {
+        setDirty(path, false);
+      },
+    );
+
+    Editor.instance.registerHooks([modelChangeHook, editorSaveHook]);
+
+    return () => {
+      Editor.instance.disposeHooks([modelChangeHook, editorSaveHook]);
+    };
+  }, [setDirty]);
 
   return (
     <div

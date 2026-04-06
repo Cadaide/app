@@ -1,6 +1,8 @@
 import type { editor } from "monaco-editor";
 import * as monaco from "monaco-editor";
 import { pathToName } from "@/utils/files/file";
+import { API } from "@/api";
+import { EditorHook, EditorHookId } from "./EditorHook";
 
 export class Editor {
   static #instance: Editor;
@@ -18,6 +20,8 @@ export class Editor {
   #editorMounted: boolean = false;
 
   #initializedListeners: (() => void)[] = [];
+
+  #hooks: EditorHook[] = [];
 
   constructor() {}
 
@@ -78,6 +82,30 @@ export class Editor {
     }
   }
 
+  registerHook(hook: EditorHook) {
+    this.#hooks.push(hook);
+  }
+
+  notifyHook(hookId: EditorHookId, ...args: any[]) {
+    this.#hooks.forEach((hook) => {
+      if (hook.id == hookId) hook.notify(...args);
+    });
+  }
+
+  disposeHook(hook: EditorHook) {
+    hook.dispose();
+
+    this.#hooks.splice(this.#hooks.indexOf(hook), 1);
+  }
+
+  registerHooks(hooks: EditorHook[]) {
+    hooks.forEach((hook) => this.registerHook(hook));
+  }
+
+  disposeHooks(hooks: EditorHook[]) {
+    hooks.forEach((hook) => this.disposeHook(hook));
+  }
+
   openFile(path: string | null) {
     if (!path) {
       if (!this.#editorMounted) return;
@@ -96,5 +124,11 @@ export class Editor {
     this.editor.setModel(model);
 
     //window.api.setActivity(pathToName(path));
+  }
+
+  async saveFile(path: string, content: string) {
+    await API.fs.writeFile(path, content);
+
+    this.notifyHook(EditorHookId.EditorSave, { path });
   }
 }
