@@ -9,6 +9,8 @@ import React, {
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
 import { Workspace } from "@/classes/Workspace";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
+import { API } from "@/api";
+import { Editor } from "@/classes/Editor";
 
 type MenuEntry =
   | {
@@ -31,6 +33,7 @@ export function Menubar() {
 
   const setWorkspace = useWorkspaceState((state) => state.setWorkspace);
   const closeTabs = useTabbarViewState((state) => state.closeTabs);
+  const addTab = useTabbarViewState((state) => state.addTab);
 
   const handleOpenProject = useCallback(async () => {
     const path = await window.api.openSelectDirectoryDialog();
@@ -53,6 +56,13 @@ export function Menubar() {
     // TODO: Reload without reloading
     location.reload();
   }, [setWorkspace, closeTabs]);
+
+  const handleOpenSettings = useCallback(async () => {
+    const path = await API.config.getSettingsPath();
+
+    Editor.instance.openFile(path.path);
+    addTab(path.path, "catppuccin:config", "settings.json");
+  }, [addTab]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button != 0) return;
@@ -96,6 +106,21 @@ export function Menubar() {
             type: "item",
             label: "Open folder... (path input)",
             onClick: handleOpenProjectPI,
+          },
+          {
+            type: "item",
+            label: "Settings",
+            onClick: handleOpenSettings,
+          },
+        ],
+      },
+      {
+        label: "Window",
+        entries: [
+          {
+            type: "item",
+            label: "Reload window",
+            onClick: () => window.location.reload(),
           },
         ],
       },

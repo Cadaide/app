@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { LoadingScreen } from "../components/base/LoadingScreen";
+import { Application } from "@/classes/Application";
+import { useEffect, useState } from "react";
 
 const AppShell = dynamic(
   async () => (await import("../components/app/AppShell")).AppShell,
@@ -12,9 +14,17 @@ const AppShell = dynamic(
 );
 
 export default function Page() {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    Application.initialize().then(() => {
+      setInitialized(true);
+    });
+  }, []);
+
   return (
     <div className="w-screen h-screen">
-      <AppShell />
+      {initialized ? <AppShell /> : <LoadingScreen />}
     </div>
   );
 }

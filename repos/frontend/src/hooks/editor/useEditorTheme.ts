@@ -1,3 +1,4 @@
+import { Settings } from "@/classes/Settings";
 import { registerMonacoThemes } from "@/editor/themes";
 import { EditorProps, Monaco } from "@monaco-editor/react";
 import { useCallback } from "react";
@@ -22,7 +23,7 @@ export function useEditorTheme(): IEditorThemeOutput {
     theme: activeTheme,
     onBeforeMount,
     options: {
-      fontSize: 18,
+      fontSize: Settings.instance.get("editor.fontSize") || 18,
       fontWeight: "700",
       fontFamily: "var(--font-jetBrains), 'JetBrains Mono', monospace",
       fontLigatures: true,
