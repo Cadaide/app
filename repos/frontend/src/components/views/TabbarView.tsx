@@ -1,15 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { Icon, IconifyIcon } from "@iconify/react";
 import { PiCircle, PiCircleFill, PiX } from "react-icons/pi";
 import { EditorHook, EditorHookId } from "@/classes/EditorHook";
 import { Editor } from "@/classes/Editor";
 
-interface TabbarViewItemProps {
+interface ITabbarViewItemProps {
   path: string;
   name: string;
   icon: IconifyIcon | string;
   isActive: boolean;
+  isDirty: boolean;
+}
+
+interface ITabbarViewDirtyIndicatorCloseButtonProps {
+  path: string;
   isDirty: boolean;
 }
 
@@ -58,10 +63,9 @@ export function TabbarView() {
   );
 }
 
-export function TabbarViewItem(props: TabbarViewItemProps) {
+export function TabbarViewItem(props: ITabbarViewItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  const removeTab = useTabbarViewState((state) => state.removeTab);
   const setActiveTab = useTabbarViewState((state) => state.setActiveTab);
 
   useEffect(() => {
@@ -82,18 +86,40 @@ export function TabbarViewItem(props: TabbarViewItemProps) {
     >
       <Icon icon={props.icon} className="w-5 h-5 shrink-0" />
       <p className="whitespace-nowrap">{props.name}</p>
-      {props.isDirty && (
-        <PiCircleFill className="w-3 h-3 shrink-0 text-ctp-lavender" />
-      )}
-      <PiX
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          removeTab(props.path);
-        }}
-        className="w-6 h-6 ml-auto hover:bg-ctp-surface2 rounded-sm p-1 cursor-pointer transition-colors duration-150"
+      <TabbarViewDirtyIndicatorCloseButton
+        path={props.path}
+        isDirty={props.isDirty}
       />
     </div>
+  );
+}
+
+export function TabbarViewDirtyIndicatorCloseButton(
+  props: ITabbarViewDirtyIndicatorCloseButtonProps,
+) {
+  const removeTab = useTabbarViewState((state) => state.removeTab);
+
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      className="w-5 h-5 ml-auto flex items-center justify-center hover:bg-ctp-surface2 rounded-sm cursor-pointer transition-colors duration-150"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeTab(props.path);
+      }}
+    >
+      {props.isDirty && !hovered ? (
+        <PiCircleFill
+          className="w-1.5 h-1.5 flex text-ctp-lavender shrink-0"
+          size={14}
+        />
+      ) : (
+        <PiX className="w-2.5 h-2.5 shrink-0" />
+      )}
+    </button>
   );
 }
