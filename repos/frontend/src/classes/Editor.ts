@@ -78,7 +78,15 @@ export class Editor {
     }
   }
 
-  openFile(path: string) {
+  openFile(path: string | null) {
+    if (!path) {
+      if (!this.#editorMounted) return;
+
+      this.editor.setModel(null);
+
+      return;
+    }
+
     const normalizedPath = path.replaceAll("\\", "/");
     const fileUri = monaco.Uri.file(normalizedPath);
     const model = this.getModel(fileUri.toString());

@@ -21,8 +21,6 @@ export function useEditorSingleton(): IEditorSingletonOutput {
   );
 
   useEffect(() => {
-    if (!activeTabPath) return;
-
     Editor.instance.openFile(activeTabPath);
   }, [activeTabPath]);
 

@@ -37,12 +37,23 @@ export const useTabbarViewState = create<{
           activeTabPath: path,
         }));
       },
-      removeTab: (path) =>
+      removeTab: (path) => {
+        const { tabs, activeTabPath } = get();
+
+        const isActive = activeTabPath === path;
+        const index = tabs.findIndex((tab) => tab.path === path);
+
+        if (index === -1) return;
+
         set((state) => ({
           tabs: state.tabs.filter((tab) => tab.path !== path),
-          activeTabPath:
-            state.activeTabPath === path ? null : state.activeTabPath,
-        })),
+          activeTabPath: isActive
+            ? (state.tabs[index - 1]?.path ??
+              state.tabs[index + 1]?.path ??
+              null)
+            : state.activeTabPath,
+        }));
+      },
       setActiveTab: (id) =>
         set({
           activeTabPath: id,

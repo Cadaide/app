@@ -23,9 +23,10 @@ type Window struct {
 }
 
 type WindowConfig struct {
-	Title  string
-	Width  int
-	Height int
+	Title          string
+	Width          int
+	Height         int
+	EnableDevtools bool
 }
 
 func pickFolder() string {
@@ -74,7 +75,7 @@ func pickFolder() string {
 }
 
 func New(config WindowConfig) *Window {
-	wv := webview.New(false)
+	wv := webview.New(config.EnableDevtools)
 
 	wv.Bind("__openFolderPicker", func() string {
 		return pickFolder()

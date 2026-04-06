@@ -46,10 +46,6 @@ export function useEditorModels(
             fileUri,
           );
 
-          console.log(
-            `Creating model (${content}, ${getLanguage(entry.name)}, ${fileUri})`,
-          );
-
           Editor.instance.addModel(model);
         }),
       );

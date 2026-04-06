@@ -21,9 +21,10 @@ func RunInDevMode() {
 	defer shell.KillGroup(backendCmd)
 
 	w := window.New(window.WindowConfig{
-		Title:  "Cadaide (DEV MODE)",
-		Width:  1280,
-		Height: 720,
+		Title:          "Cadaide (DEV MODE)",
+		Width:          1280,
+		Height:         720,
+		EnableDevtools: false, // TODO: Figure out how to enable -- lags the whole app
 	})
 
 	defer w.Destroy()
@@ -47,9 +48,10 @@ func Run() {
 	defer shell.KillGroup(backendCmd)
 
 	w := window.New(window.WindowConfig{
-		Title:  "Cadaide",
-		Width:  1280,
-		Height: 720,
+		Title:          "Cadaide",
+		Width:          1280,
+		Height:         720,
+		EnableDevtools: false,
 	})
 
 	defer w.Destroy()
