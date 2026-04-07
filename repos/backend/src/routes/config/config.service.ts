@@ -3,12 +3,11 @@ import { existsSync } from 'fs';
 import { access, constants, mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { CFG_PATH_SETTINGS_FILE } from 'src/config/paths';
-import { defaultSettings } from 'src/config/settings';
-import { TSettings } from 'src/types/Settings';
+import { defaultSettings, settingsSchema } from 'src/config/settings';
 
 @Injectable()
 export class ConfigService {
-  async getSettings(): Promise<TSettings> {
+  async getSettings(): Promise<any> {
     return await this.#readSettingsFile();
   }
 
@@ -18,7 +17,7 @@ export class ConfigService {
     };
   }
 
-  async #readSettingsFile(): Promise<TSettings> {
+  async #readSettingsFile(): Promise<any> {
     const dir = path.dirname(CFG_PATH_SETTINGS_FILE);
     const dirExists = existsSync(dir);
     if (!dirExists) await mkdir(dir, { recursive: true });
@@ -31,9 +30,15 @@ export class ConfigService {
 
   async #createDefaultSettings(): Promise<void> {
     await this.#writeSettingsFile(defaultSettings);
+
+    const schema = settingsSchema;
+    await writeFile(
+      path.join(path.dirname(CFG_PATH_SETTINGS_FILE), 'settings.schema.json'),
+      JSON.stringify(schema, null, 2),
+    );
   }
 
-  async #writeSettingsFile(settings: TSettings) {
+  async #writeSettingsFile(settings: any) {
     await writeFile(CFG_PATH_SETTINGS_FILE, JSON.stringify(settings, null, 2));
   }
 }
