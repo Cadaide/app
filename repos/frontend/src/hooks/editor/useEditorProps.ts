@@ -49,6 +49,13 @@ export function useEditorProps(props: {
         noSuggestionDiagnostics: true,
       });
 
+      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+        validate: true,
+        allowComments: false,
+        schemas: [],
+        enableSchemaRequest: true,
+      });
+
       props.theme.onBeforeMount(monaco);
       await props.models.onBeforeMount(monaco);
     },
