@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-15
     defaults:
       run:
-        working-directory: repos/microservices/fs
+        working-directory: repos/desktop
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -29,7 +29,7 @@ jobs:
           go build -o build/cadaide-amd64 ./src/main.go
 
       - name: Debug
-        working-directory: repos/microservices/fs
+        working-directory: repos/desktop
         run: |
           pwd
           ls -la
@@ -38,13 +38,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cadaide-macos-amd64
-          path: repos/microservices/fs/build/cadaide-amd64
+          path: repos/desktop/build/cadaide-amd64
 
   build-macos-arm64:
     runs-on: macos-15
     defaults:
       run:
-        working-directory: repos/microservices/fs
+        working-directory: repos/desktop
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -62,7 +62,7 @@ jobs:
           go build -o build/cadaide-arm64 ./src/main.go
 
       - name: Debug
-        working-directory: repos/microservices/fs
+        working-directory: repos/desktop
         run: |
           pwd
           ls -la
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cadaide-macos-arm64
-          path: repos/microservices/fs/build/cadaide-arm64
+          path: repos/desktop/build/cadaide-arm64
 
   universal-macos:
     needs: [build-macos-amd64, build-macos-arm64]
