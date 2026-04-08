@@ -7,57 +7,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    runs-on: ubuntu-latest
-    container:
-      image: golang:1.25-bookworm
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install MinGW
-        run: |
-          apt-get update && apt-get install -y \
-            gcc-mingw-w64 \
-            g++-mingw-w64 \
-            mingw-w64-common \
-            mingw-w64-x86-64-dev
-
-      - name: Download modules
-        run: go mod download
-
-      - name: Symlink EventToken.h
-        run: |
-          WEBVIEW2_INCLUDE=/root/go/pkg/mod/github.com/webview/webview_go@v0.0.0-20240831120633-6173450d4dd6/libs/mswebview2/include
-          ln -sf /usr/x86_64-w64-mingw32/include/eventtoken.h ${WEBVIEW2_INCLUDE}/EventToken.h
-
-      - name: Build
-        env:
-          CC: x86_64-w64-mingw32-gcc
-          CXX: x86_64-w64-mingw32-g++
-          CGO_ENABLED: 1
-          GOOS: windows
-          GOARCH: amd64
-        run: go build -o build/cadaide.exe -ldflags "-H windowsgui" ./src/main.go
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cadaide-windows
-          path: build/cadaide.exe
-
   build-macos-amd64:
-    runs-on: macos-13
+    runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25"
+          cache: false
 
       - name: Build
         env:
           CGO_ENABLED: 1
           GOOS: darwin
           GOARCH: amd64
-        run: go build -o build/cadaide-amd64 ./src/main.go
+        run: |
+          mkdir -p build
+          go build -o build/cadaide-amd64 ./src/main.go
 
       - uses: actions/upload-artifact@v4
         with:
@@ -65,19 +31,22 @@ jobs:
           path: build/cadaide-amd64
 
   build-macos-arm64:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.25"
+          cache: false
 
       - name: Build
         env:
           CGO_ENABLED: 1
           GOOS: darwin
           GOARCH: arm64
-        run: go build -o build/cadaide-arm64 ./src/main.go
+        run: |
+          mkdir -p build
+          go build -o build/cadaide-arm64 ./src/main.go
 
       - uses: actions/upload-artifact@v4
         with:
@@ -86,7 +55,7 @@ jobs:
 
   universal-macos:
     needs: [build-macos-amd64, build-macos-arm64]
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/download-artifact@v4
         with:
