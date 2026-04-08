@@ -28,10 +28,17 @@ jobs:
           mkdir -p build
           go build -o build/cadaide-amd64 ./src/main.go
 
+      - name: Debug
+        working-directory: repos/microservices/fs
+        run: |
+          pwd
+          ls -la
+          ls -la build/ || echo "build/ neexistuje"
+
       - uses: actions/upload-artifact@v4
         with:
           name: cadaide-macos-amd64
-          path: build/cadaide-amd64
+          path: repos/microservices/fs/build/cadaide-amd64
 
   build-macos-arm64:
     runs-on: macos-15
@@ -54,10 +61,17 @@ jobs:
           mkdir -p build
           go build -o build/cadaide-arm64 ./src/main.go
 
+      - name: Debug
+        working-directory: repos/microservices/fs
+        run: |
+          pwd
+          ls -la
+          ls -la build/ || echo "build/ neexistuje"
+
       - uses: actions/upload-artifact@v4
         with:
           name: cadaide-macos-arm64
-          path: build/cadaide-arm64
+          path: repos/microservices/fs/build/cadaide-arm64
 
   universal-macos:
     needs: [build-macos-amd64, build-macos-arm64]
