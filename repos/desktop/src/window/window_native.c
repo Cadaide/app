@@ -1,5 +1,5 @@
 #include "window_native.h"
-
+#ifndef __APPLE__
 #ifdef _WIN32
 #include <windows.h>
 
@@ -103,4 +103,5 @@ void window_restore(void *handle) { gtk_window_unmaximize(GTK_WINDOW(handle)); }
 int window_is_maximized(void *handle) {
   return gtk_window_is_maximized(GTK_WINDOW(handle)) ? 1 : 0;
 }
+#endif
 #endif
