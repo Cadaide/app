@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build darwin
 
 package shell
 
@@ -10,8 +10,7 @@ import (
 
 func SetSysProcAttr(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid:   true, // new process group
-		Pdeathsig: syscall.SIGKILL,
+		Setpgid: true,
 	}
 }
 

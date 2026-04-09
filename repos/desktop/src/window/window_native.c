@@ -79,7 +79,26 @@ void window_restore(void *handle) {
 
 int window_is_maximized(void *handle) { return IsZoomed((HWND)handle) ? 1 : 0; }
 
+#elif defined(__APPLE__)
+#import <Cocoa/Cocoa.h>
+
+void make_window_frameless(void *handle) {
+  // no-op figure out later
+}
+
+void begin_drag(void *handle, int x, int y) {}
+
+void window_close(void *handle) {}
+
+void window_minimize(void *handle) {}
+
+void window_maximize(void *handle) {}
+
+void window_restore(void *handle) {}
+
+int window_is_maximized(void *handle) { return 0; }
 #else
+
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
@@ -102,5 +121,4 @@ void window_restore(void *handle) { gtk_window_unmaximize(GTK_WINDOW(handle)); }
 int window_is_maximized(void *handle) {
   return gtk_window_is_maximized(GTK_WINDOW(handle)) ? 1 : 0;
 }
-
 #endif
