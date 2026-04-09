@@ -12,6 +12,8 @@ import (
 /*
 #cgo windows LDFLAGS: -luser32 -ldwmapi -lcomctl32
 #cgo linux pkg-config: gtk+-3.0
+#cgo darwin CFLAGS: -x objective-c
+#cgo darwin LDFLAGS: -framework Cocoa
 
 #include "window_native.h"
 */
