@@ -3,9 +3,11 @@ package app
 import (
 	"cadaide/src/binaries"
 	"cadaide/src/shell"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 func RunFrontendInDevMode() (*exec.Cmd, error) {
@@ -41,4 +43,20 @@ func RunFrontend() (*exec.Cmd, error) {
 	}
 
 	return cmd, nil
+}
+
+func WaitForFrontend() {
+	for {
+		resp, err := http.Get("http://localhost:3000")
+		if err != nil {
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+
+		if resp.StatusCode == 200 {
+			return
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
 }
