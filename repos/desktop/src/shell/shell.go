@@ -35,6 +35,19 @@ func RunHidden(options RunOptions) (*exec.Cmd, error) {
 	return cmd, nil
 }
 
+func RunHiddenSync(options RunOptions) error {
+	cmd := prepareCmd(options)
+
+	SetSysProcAttr(cmd)
+
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func prepareCmd(options RunOptions) *exec.Cmd {
 	cmd := exec.Command(options.Command[0], options.Command[1:]...)
 

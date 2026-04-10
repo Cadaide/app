@@ -72,12 +72,12 @@ export class LauncherBuild extends BuildStep {
   }
 
   async #buildLinux() {
-    const cmd = Shell.run(
+    /*const cmd = Shell.run(
       ["go", "build", "-o", "../dist/cadaide", "src/main.go"],
       path.join(process.cwd(), "build/launcher"),
     );
 
-    await cmd.await().catch((e) => Promise.reject(e));
+    await cmd.await().catch((e) => Promise.reject(e));*/
   }
 
   async #buildMacos() {

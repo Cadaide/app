@@ -14,6 +14,7 @@ import { MicroserviceFsClean } from "./steps/microservice_fs.clean";
 import { ModulesCopy } from "./steps/modules.copy";
 import { OutputPrepare } from "./steps/output.prepare";
 import { PackageZip } from "./steps/package.zip";
+import { ReleaseCopy } from "./steps/release.copy";
 
 const steps: (new () => BuildStep)[] = [
   // prepare
@@ -46,6 +47,9 @@ const steps: (new () => BuildStep)[] = [
 
   // build launcher
   LauncherBuild,
+
+  // copy release
+  ReleaseCopy,
 ];
 
 await new StepRunner(steps).runAll();

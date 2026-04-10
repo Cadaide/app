@@ -6,6 +6,7 @@ export enum Platform {
 
 export const BuildConfig = {
   platform: getPlatform(),
+  version: getVersion(),
 
   outdir: "build",
 };
@@ -23,4 +24,14 @@ function getPlatform(): Platform {
     default:
       throw new Error(`Unknown platform: ${platform}`);
   }
+}
+
+function getVersion(): string {
+  const version = process.argv[3];
+
+  if (!version) {
+    throw new Error("Version not provided");
+  }
+
+  return version;
 }
