@@ -1,12 +1,15 @@
 package window
 
 import (
+	"log"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"unsafe"
 
 	webview "github.com/webview/webview_go"
+	lorca "github.com/zserge/lorca"
 )
 
 /*
@@ -20,8 +23,10 @@ import (
 import "C"
 
 type Window struct {
-	config  WindowConfig
-	webview webview.WebView
+	config   WindowConfig
+	webview  webview.WebView
+	lorca    lorca.UI
+	useLorca bool
 }
 
 type WindowConfig struct {
@@ -29,6 +34,22 @@ type WindowConfig struct {
 	Width          int
 	Height         int
 	EnableDevtools bool
+}
+
+func macOSMajorVersion() int {
+	if runtime.GOOS != "darwin" {
+		return 0
+	}
+	out, err := exec.Command("sw_vers", "-productVersion").Output()
+	if err != nil {
+		return 0
+	}
+	parts := strings.Split(strings.TrimSpace(string(out)), ".")
+	if len(parts) == 0 {
+		return 0
+	}
+	v, _ := strconv.Atoi(parts[0])
+	return v
 }
 
 func pickFolder() string {
@@ -58,7 +79,6 @@ func pickFolder() string {
 		return strings.TrimSpace(string(out))
 
 	case "linux":
-		// zkus zenity (GTK), pak kdialog (KDE)
 		for _, tool := range [][]string{
 			{"zenity", "--file-selection", "--directory", "--title=Select installation folder"},
 			{"kdialog", "--getexistingdirectory", "."},
@@ -77,6 +97,56 @@ func pickFolder() string {
 }
 
 func New(config WindowConfig) *Window {
+	useLorca := macOSMajorVersion() <= 12 && runtime.GOOS == "darwin"
+
+	if useLorca {
+		return newLorcaWindow(config)
+	}
+	return newWebviewWindow(config)
+}
+
+func newLorcaWindow(config WindowConfig) *Window {
+	ui, err := lorca.New("", "", config.Width, config.Height, "--remote-debugging-port=0", "--no-first-run", "--no-default-browser-check")
+	if err != nil {
+		log.Printf("lorca error: %v", err)
+		return newWebviewWindow(config)
+	}
+	if ui == nil {
+		log.Printf("lorca ui is nil")
+		return newWebviewWindow(config)
+	}
+
+	ui.Bind("__openFolderPicker", func() string {
+		return pickFolder()
+	})
+
+	ui.Bind("__beginWindowDrag", func(x, y int) {})
+	ui.Bind("__windowClose", func() { ui.Close() })
+	ui.Bind("__windowMinimize", func() {})
+	ui.Bind("__windowMaximize", func() {})
+	ui.Bind("__windowRestore", func() {})
+	ui.Bind("__windowIsMaximized", func() int { return 0 })
+
+	ui.Eval(`
+		window.api = {
+			openSelectDirectoryDialog: () => window.__openFolderPicker(),
+			beginWindowDrag: (x, y) => window.__beginWindowDrag(x, y),
+			windowClose: () => window.__windowClose(),
+			windowMinimize: () => window.__windowMinimize(),
+			windowMaximize: () => window.__windowMaximize(),
+			windowRestore: () => window.__windowRestore(),
+			windowIsMaximized: () => window.__windowIsMaximized(),
+		}
+	`)
+
+	return &Window{
+		config:   config,
+		lorca:    ui,
+		useLorca: true,
+	}
+}
+
+func newWebviewWindow(config WindowConfig) *Window {
 	wv := webview.New(config.EnableDevtools)
 
 	wv.Bind("__openFolderPicker", func() string {
@@ -109,34 +179,45 @@ func New(config WindowConfig) *Window {
 	})
 
 	wv.Init(`
-    window.api = {
-        openSelectDirectoryDialog: () => window.__openFolderPicker(),
+		window.api = {
+			openSelectDirectoryDialog: () => window.__openFolderPicker(),
 			beginWindowDrag: (x, y) => window.__beginWindowDrag(x, y),
 			windowClose: () => window.__windowClose(),
 			windowMinimize: () => window.__windowMinimize(),
 			windowMaximize: () => window.__windowMaximize(),
 			windowRestore: () => window.__windowRestore(),
 			windowIsMaximized: () => window.__windowIsMaximized(),
-    }
-`)
+		}
+	`)
 
 	return &Window{
-		config:  config,
-		webview: wv,
+		config:   config,
+		webview:  wv,
+		useLorca: false,
 	}
 }
 
 func (w *Window) Destroy() {
-	w.webview.Destroy()
+	if w.useLorca {
+		w.lorca.Close()
+	} else {
+		w.webview.Destroy()
+	}
 }
 
 func (w *Window) Open(url string) {
+	log.Println("Using Lorca: ", w.useLorca)
+
+	if w.useLorca {
+		w.lorca.Load(url)
+		<-w.lorca.Done()
+		return
+	}
+
 	w.webview.SetTitle(w.config.Title)
 	w.webview.SetSize(w.config.Width, w.config.Height, webview.HintNone)
-
 	w.webview.Navigate(url)
 
-	// Make frameless must run on UI thread
 	w.webview.Dispatch(func() {
 		handle := w.webview.Window()
 		C.make_window_frameless(unsafe.Pointer(handle))
