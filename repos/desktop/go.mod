@@ -1,6 +1,6 @@
 module cadaide
 
-go 1.25.7
+go 1.24.13
 
 require (
 	github.com/MartinGamesCZ/go-webview-gui v0.0.0-20260405152244-cd72f90a6d65 // indirect

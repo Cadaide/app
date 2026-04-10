@@ -11,6 +11,7 @@ import { Workspace } from "@/classes/Workspace";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { API } from "@/api";
 import { Editor } from "@/classes/Editor";
+import { Application } from "@/classes/Application";
 
 type MenuEntry =
   | {
@@ -100,12 +101,9 @@ export function Menubar() {
           {
             type: "item",
             label: "Open folder...",
-            onClick: handleOpenProject,
-          },
-          {
-            type: "item",
-            label: "Open folder... (path input)",
-            onClick: handleOpenProjectPI,
+            onClick: Application.isNative
+              ? handleOpenProject
+              : handleOpenProjectPI,
           },
           {
             type: "item",

@@ -19,6 +19,18 @@ func GetBunBinaryPath() string {
 
 // TODO: Cwd can sometimes be different, so we need to get the actual cwd
 // depending on launch method
+func GetNodeBinaryPath() string {
+	cwd, _ := os.Getwd()
+
+	if os.Getenv("OS") == "Windows_NT" {
+		return filepath.Join(cwd, "../../bin/node.exe")
+	}
+
+	return filepath.Join(cwd, "../../bin/node")
+}
+
+// TODO: Cwd can sometimes be different, so we need to get the actual cwd
+// depending on launch method
 func GetFSBinaryPath() string {
 	cwd, _ := os.Getwd()
 

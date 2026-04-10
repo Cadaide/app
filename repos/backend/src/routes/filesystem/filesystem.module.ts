@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FilesystemController } from './filesystem.controller';
 import { FilesystemService } from './filesystem.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { RPC_BINARY, RPCService } from 'src/services/RPC.service';
 

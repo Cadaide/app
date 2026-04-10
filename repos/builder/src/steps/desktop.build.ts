@@ -24,6 +24,9 @@ export class DesktopBuild extends BuildStep {
       case Platform.Windows:
         await this.#buildWindows().catch((e) => Promise.reject(e));
         break;
+      case Platform.Macos:
+        await this.#buildMacos().catch((e) => Promise.reject(e));
+        break;
     }
   }
 
@@ -36,6 +39,19 @@ export class DesktopBuild extends BuildStep {
     );
 
     await cmd.await().catch((e) => Promise.reject(e));
+  }
+
+  async #buildMacos() {
+    this.logger.info("Building desktop...");
+
+    console.log("Please run this on mac:");
+    console.log("go build -o build/cadaide src/main.go");
+    console.log(" - in " + this.#desktopRoot);
+    console.log("Press enter when you are done.");
+
+    await new Promise((resolve) => {
+      process.stdin.once("data", resolve);
+    });
   }
 
   async #buildWindows() {

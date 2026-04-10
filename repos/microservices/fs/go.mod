@@ -1,6 +1,6 @@
 module cadaide/fs
 
-go 1.25.7
+go 1.24.13
 
 require (
 	golang.org/x/net v0.48.0 // indirect

@@ -26,10 +26,10 @@ func RunFrontendInDevMode() (*exec.Cmd, error) {
 func RunFrontend() (*exec.Cmd, error) {
 	cwd, _ := os.Getwd()
 
-	bunBinary := binaries.GetBunBinaryPath()
+	nodeBinary := binaries.GetNodeBinaryPath()
 
 	cmd, err := shell.RunHidden(shell.RunOptions{
-		Command: []string{bunBinary, "server.js"},
+		Command: []string{nodeBinary, "server.js"},
 		Cwd:     filepath.Join(cwd, "../frontend"),
 		Env: map[string]string{
 			"PORT":     "3000",

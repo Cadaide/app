@@ -65,6 +65,9 @@ export class LauncherBuild extends BuildStep {
       case Platform.Windows:
         await this.#buildWindows().catch((e) => Promise.reject(e));
         break;
+      case Platform.Macos:
+        await this.#buildMacos().catch((e) => Promise.reject(e));
+        break;
     }
   }
 
@@ -75,6 +78,11 @@ export class LauncherBuild extends BuildStep {
     );
 
     await cmd.await().catch((e) => Promise.reject(e));
+  }
+
+  async #buildMacos() {
+    this.logger.info("Building launcher...");
+    this.logger.info("Skipping for mac");
   }
 
   async #buildWindows() {

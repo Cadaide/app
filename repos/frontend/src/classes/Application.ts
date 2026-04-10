@@ -33,4 +33,8 @@ export class Application {
       Application.#initializedListeners = [];
     }
   }
+
+  static get isNative() {
+    return typeof window !== "undefined" && window.api !== undefined;
+  }
 }

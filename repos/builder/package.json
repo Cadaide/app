@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "build:windows": "bun run src/index.ts windows",
-    "build:linux": "bun run src/index.ts linux"
+    "build:linux": "bun run src/index.ts linux",
+    "build:macos": "bun run src/index.ts macos"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -17,7 +18,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@nestjs/websockets": "^11.1.18",
     "chalk": "^5.6.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "electron-builder": "^26.8.1",
     "unzipper": "^0.12.3"
   }

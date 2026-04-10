@@ -3,6 +3,7 @@ package app
 import (
 	"cadaide/src/shell"
 	"cadaide/src/window"
+	"time"
 )
 
 func RunInDevMode() {
@@ -56,5 +57,7 @@ func Run() {
 
 	defer w.Destroy()
 
-	w.Open("http://localhost:3000")
+	time.Sleep(10 * time.Second)
+
+	w.Open("http://127.0.0.1:3000")
 }

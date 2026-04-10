@@ -1,5 +1,4 @@
 import z from 'zod';
-import zodToJsonSchema from 'zod-to-json-schema';
 
 const SettingsSchema = z.object({
   editor: z.object({

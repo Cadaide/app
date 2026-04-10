@@ -18,6 +18,7 @@ export class BinariesDownload extends BuildStep {
 
   async run() {
     await this.#downloadBun().catch((e) => this.logger.error(e));
+    await this.#downloadNode().catch((e) => this.logger.error(e));
   }
 
   async #downloadBun() {
@@ -26,35 +27,69 @@ export class BinariesDownload extends BuildStep {
     const url =
       BuildConfig.platform == Platform.Windows
         ? "https://github.com/oven-sh/bun/releases/download/bun-v1.3.11/bun-windows-x64.zip"
-        : "https://github.com/oven-sh/bun/releases/download/bun-v1.3.11/bun-linux-x64.zip";
+        : BuildConfig.platform == Platform.Linux
+          ? "https://github.com/oven-sh/bun/releases/download/bun-v1.3.11/bun-linux-x64.zip"
+          : "https://github.com/oven-sh/bun/releases/download/bun-v1.0.25/bun-darwin-x64.zip";
 
-    await this.#downloadAndUnzip(
+    await this.#downloadAndExtract(
       url,
       BuildConfig.platform == Platform.Windows
         ? "bun-windows-x64"
-        : "bun-linux-x64",
+        : BuildConfig.platform == Platform.Linux
+          ? "bun-linux-x64"
+          : "bun-darwin-x64",
       BuildConfig.platform == Platform.Windows ? "bun.exe" : "bun",
     ).catch((e) => Promise.reject(e));
   }
 
-  async #downloadAndUnzip(url: string, folderName: string, fileName: string) {
-    const zipTmpName = randomUUID() + ".zip";
-    const zipTmpPath = path.join(this.#tmpDir, zipTmpName);
+  async #downloadNode() {
+    this.logger.info("Downloading node...");
 
-    const cmd = Shell.run(["curl", "-L", url, "-o", zipTmpPath], process.cwd());
+    const url =
+      BuildConfig.platform == Platform.Windows
+        ? "https://nodejs.org/dist/v22.19.0/node-v22.19.0-win-x64.zip"
+        : BuildConfig.platform == Platform.Linux
+          ? "https://nodejs.org/dist/v22.19.0/node-v22.19.0-linux-x64.tar.xz"
+          : "https://nodejs.org/dist/v22.19.0/node-v22.19.0-darwin-x64.tar.xz";
+
+    await this.#downloadAndExtract(
+      url,
+      BuildConfig.platform == Platform.Windows
+        ? "node-v22.19.0-win-x64"
+        : BuildConfig.platform == Platform.Linux
+          ? path.join("node-v22.19.0-linux-x64", "bin")
+          : path.join("node-v22.19.0-darwin-x64", "bin"),
+      BuildConfig.platform == Platform.Windows ? "node.exe" : "node",
+    ).catch((e) => Promise.reject(e));
+  }
+
+  async #downloadAndExtract(url: string, folderName: string, fileName: string) {
+    const isTar = url.endsWith(".tar.xz") || url.endsWith(".tar.gz");
+    const ext = isTar ? (url.endsWith(".tar.xz") ? ".tar.xz" : ".tar.gz") : ".zip";
+    const tmpName = randomUUID() + ext;
+    const tmpPath = path.join(this.#tmpDir, tmpName);
+
+    const cmd = Shell.run(["curl", "-L", url, "-o", tmpPath], process.cwd());
 
     await cmd.await().catch((e) => Promise.reject(e));
 
-    const unzipCmd = Shell.run(
-      ["unzip", zipTmpPath, "-d", this.#tmpDir],
-      process.cwd(),
-    );
+    if (isTar) {
+      const tarCmd = Shell.run(
+        ["tar", "-xf", tmpPath, "-C", this.#tmpDir],
+        process.cwd(),
+      );
+      await tarCmd.await().catch((e) => Promise.reject(e));
+    } else {
+      const unzipCmd = Shell.run(
+        ["unzip", tmpPath, "-d", this.#tmpDir],
+        process.cwd(),
+      );
+      await unzipCmd.await().catch((e) => Promise.reject(e));
+    }
 
-    await unzipCmd.await().catch((e) => Promise.reject(e));
-
-    const bunPath = path.join(this.#tmpDir, folderName, fileName);
+    const extractedPath = path.join(this.#tmpDir, folderName, fileName);
     const destPath = path.join(this.#binDir, fileName);
 
-    await cp(bunPath, destPath).catch((e) => Promise.reject(e));
+    await cp(extractedPath, destPath).catch((e) => Promise.reject(e));
   }
 }

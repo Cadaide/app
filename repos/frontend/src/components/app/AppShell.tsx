@@ -7,6 +7,7 @@ import { Menubar } from "./Menubar";
 import dynamic from "next/dynamic";
 import { LoadingScreen } from "../base/LoadingScreen";
 import { CodePathView } from "../views/CodePathView";
+import { HomeScreen } from "../screen/HomeScreen";
 
 const CodeEditor = dynamic(
   async () => (await import("../editor/CodeEditor")).CodeEditor,
@@ -25,11 +26,15 @@ export function AppShell() {
       <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-row">
         <SidebarView />
         <SidebarTabView />
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          <TabbarView />
-          <CodePathView />
-          {workspace && <CodeEditor workspace={workspace} />}
-        </div>
+        {workspace ? (
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <TabbarView />
+            <CodePathView />
+            <CodeEditor workspace={workspace} />
+          </div>
+        ) : (
+          <HomeScreen />
+        )}
       </div>
       <Bottombar />
     </div>

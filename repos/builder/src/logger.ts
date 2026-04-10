@@ -19,9 +19,10 @@ export class Logger {
     );
   }
 
-  error(message: Error) {
+  error(message: unknown) {
+    const msg = message instanceof Error ? message.message : String(message ?? "Unknown error");
     console.log(
-      `${chalk.gray(`(${this.#prefix})`)} ${chalk.red("✗")} ${chalk.gray("Error")} ${chalk.blue(message.message)}`,
+      `${chalk.gray(`(${this.#prefix})`)} ${chalk.red("✗")} ${chalk.gray("Error")} ${chalk.blue(msg)}`,
     );
   }
 

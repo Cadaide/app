@@ -12,7 +12,7 @@ export function CodePathView() {
   const activeTab = useTabbarViewState((state) => state.activeTabPath);
   const workspace = useWorkspaceState((state) => state.workspace);
 
-  const relativePath = path.relative(workspace?.path!, activeTab!);
+  const relativePath = path.relative(workspace?.path ?? "/", activeTab ?? "");
   const parts = relativePath.includes("..")
     ? activeTab?.split("/")
     : relativePath.split("/");
