@@ -32,7 +32,7 @@ export function HomeScreen() {
   }, [setWorkspace, closeTabs]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center bg-ctp-base text-ctp-text">
+    <div className="h-full flex flex-col grow items-center justify-center bg-ctp-base text-ctp-text">
       <h1 className="text-4xl font-bold mb-2">Cadaide</h1>
       <p className="text-lg text-ctp-subtext1 mb-6">
         Open a project to get started

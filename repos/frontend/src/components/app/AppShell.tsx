@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { LoadingScreen } from "../base/LoadingScreen";
 import { CodePathView } from "../views/CodePathView";
 import { HomeScreen } from "../screen/HomeScreen";
+import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 
 const CodeEditor = dynamic(
   async () => (await import("../editor/CodeEditor")).CodeEditor,
@@ -19,6 +20,7 @@ const CodeEditor = dynamic(
 
 export function AppShell() {
   const workspace = useWorkspaceState((state) => state.workspace);
+  const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
 
   return (
     <div className="w-screen h-screen min-w-screen max-w-screen min-h-screen max-h-screen flex flex-col overflow-hidden">
@@ -28,9 +30,13 @@ export function AppShell() {
         <SidebarTabView />
         {workspace ? (
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-            <TabbarView />
-            <CodePathView />
-            <CodeEditor workspace={workspace} />
+            {activeTabPath && (
+              <>
+                <TabbarView />
+                <CodePathView />
+                <CodeEditor workspace={workspace} />
+              </>
+            )}
           </div>
         ) : (
           <HomeScreen />

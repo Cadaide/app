@@ -8,34 +8,53 @@ export class ReferencesCodeLensProvider {
   static #SUPPORTED_LANGUAGES = ["python", "typescript"];
   static #SUPPORTED_SYMBOL_KINDS = [5, 6, 9, 11, 12];
 
+  static #registered: boolean = false;
+
   static register(monaco: Monaco, _editor: editor.IStandaloneCodeEditor) {
+    if (this.#registered) return;
+
+    this.#registered = true;
+
     for (const lang of this.#SUPPORTED_LANGUAGES) {
+      const provider = new ReferencesCodeLensProvider();
+
       monaco.languages.registerCodeLensProvider(lang, {
-        onDidChange: this.#onDidChange.bind(this),
-        provideCodeLenses: this.#provideCodeLenses.bind(this),
-        resolveCodeLens: this.#resolveCodeLens.bind(this),
+        onDidChange: provider.#onDidChange.bind(provider),
+        provideCodeLenses: provider.#provideCodeLenses.bind(provider),
+        resolveCodeLens: provider.#resolveCodeLens.bind(provider),
       });
     }
   }
 
-  static #onDidChange(cb: () => void) {
-    const changeHook = new EditorHook(EditorHookId.ModelChange, cb);
+  #hook: EditorHook | null = null;
 
-    Editor.instance.registerHook(changeHook);
+  #onDidChange(cb: () => void) {
+    if (this.#hook) Editor.instance.disposeHook(this.#hook);
+
+    this.#hook = new EditorHook(EditorHookId.ModelChange, cb);
+    Editor.instance.registerHook(this.#hook);
 
     return {
-      dispose: () => Editor.instance.disposeHook(changeHook),
+      dispose: () => {
+        if (this.#hook) {
+          Editor.instance.disposeHook(this.#hook);
+
+          this.#hook = null;
+        }
+      },
     };
   }
 
-  static async #provideCodeLenses(model: editor.ITextModel) {
+  async #provideCodeLenses(model: editor.ITextModel) {
     const symbols = await Editor.instance.lsp.getDocumentSymbols(
       model.uri,
       model.getLanguageId(),
     );
 
     const lenses = this.#flattenSymbols(symbols)
-      .filter((s) => this.#SUPPORTED_SYMBOL_KINDS.includes(s.kind))
+      .filter((s) =>
+        ReferencesCodeLensProvider.#SUPPORTED_SYMBOL_KINDS.includes(s.kind),
+      )
       .map((symbol) => ({
         range: {
           startLineNumber: symbol.range.start.line + 1,
@@ -58,7 +77,7 @@ export class ReferencesCodeLensProvider {
     return { lenses, dispose: () => {} };
   }
 
-  static async #resolveCodeLens(model: editor.ITextModel, codeLens: any) {
+  async #resolveCodeLens(model: editor.ITextModel, codeLens: any) {
     const pos = codeLens._symbolPos ?? {
       line: codeLens.range.startLineNumber - 1,
       character: codeLens.range.startColumn - 1,
@@ -82,7 +101,7 @@ export class ReferencesCodeLensProvider {
     };
   }
 
-  static #flattenSymbols(symbols: any[]): any[] {
+  #flattenSymbols(symbols: any[]): any[] {
     return symbols.flatMap((s: any) => [
       s,
       ...this.#flattenSymbols(s.children ?? []),

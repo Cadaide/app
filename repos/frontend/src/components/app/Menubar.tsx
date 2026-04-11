@@ -33,6 +33,7 @@ export function Menubar() {
   const menubarRef = useRef<HTMLDivElement>(null);
 
   const setWorkspace = useWorkspaceState((state) => state.setWorkspace);
+  const unsetWorkspace = useWorkspaceState((state) => state.unsetWorkspace);
   const closeTabs = useTabbarViewState((state) => state.closeTabs);
   const addTab = useTabbarViewState((state) => state.addTab);
 
@@ -57,6 +58,11 @@ export function Menubar() {
     // TODO: Reload without reloading
     location.reload();
   }, [setWorkspace, closeTabs]);
+
+  const handleCloseProject = useCallback(async () => {
+    unsetWorkspace();
+    closeTabs();
+  }, [unsetWorkspace, closeTabs]);
 
   const handleOpenSettings = useCallback(async () => {
     const path = await API.config.getSettingsPath();
@@ -104,6 +110,11 @@ export function Menubar() {
             onClick: Application.isNative
               ? handleOpenProject
               : handleOpenProjectPI,
+          },
+          {
+            type: "item",
+            label: "Close folder",
+            onClick: handleCloseProject,
           },
           {
             type: "item",
