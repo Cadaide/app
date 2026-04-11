@@ -64,4 +64,30 @@ export class LspManager {
       model.getValue(),
     );
   }
+
+  notifyFileChange(model: editor.ITextModel) {
+    const lspLanguage = model.getLanguageId();
+    if (!lspLanguage) return;
+
+    const client = this.#clients.get(lspLanguage);
+    if (!client) return;
+
+    client.sendDidChange(model.uri.toString(), model.getValue());
+  }
+
+  async getDocumentSymbols(uri: monaco.Uri, languageId: string) {
+    const client = await this.#getLspForLanguage(languageId);
+
+    return client.getDocumentSymbols(uri);
+  }
+
+  async findReferences(
+    uri: monaco.Uri,
+    position: { line: number; character: number },
+    languageId: string,
+  ) {
+    const client = await this.#getLspForLanguage(languageId);
+
+    return client.findReferences(uri, position);
+  }
 }

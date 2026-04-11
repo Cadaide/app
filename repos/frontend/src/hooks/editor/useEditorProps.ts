@@ -1,17 +1,25 @@
 import type { Monaco } from "@monaco-editor/react";
-import type { editor } from "monaco-editor";
+import { editor, IPosition, IRange, Uri } from "monaco-editor";
 import { useCallback } from "react";
 import type { IEditorLspOutput } from "./useEditorLsp";
 import type { IEditorModelsOutput } from "./useEditorModels";
 import type { IEditorSingletonOutput } from "./useEditorSingleton";
 import type { IEditorThemeOutput } from "./useEditorTheme";
+import { Editor } from "@/classes/Editor";
+import { IEditorProvidersOutput } from "./useEditorProviders";
+import { useTabbarViewState } from "../stores/useTabbarViewState";
+import { getIcon } from "@/editor/icons";
+import { pathToName } from "@/utils/files/file";
 
 export function useEditorProps(props: {
   theme: IEditorThemeOutput;
   models: IEditorModelsOutput;
   singleton: IEditorSingletonOutput;
   lsp: IEditorLspOutput;
+  providers: IEditorProvidersOutput;
 }) {
+  const addTab = useTabbarViewState((state) => state.addTab);
+
   const onBeforeMount = useCallback(
     async (monaco: Monaco) => {
       // Disable all built-in Monaco TS/JS language features so the external
@@ -56,10 +64,19 @@ export function useEditorProps(props: {
         enableSchemaRequest: true,
       });
 
+      monaco.editor.registerEditorOpener({
+        openCodeEditor: (_source: editor.ICodeEditor, resource: Uri) => {
+          const name = pathToName(resource.path);
+          const icon = getIcon(name);
+
+          addTab(resource.path, icon, name);
+        },
+      });
+
       props.theme.onBeforeMount(monaco);
       await props.models.onBeforeMount(monaco);
     },
-    [props.theme, props.models],
+    [props.theme, props.models, addTab],
   );
 
   const onMount = useCallback(
@@ -67,10 +84,11 @@ export function useEditorProps(props: {
       props.models.onMount(editor, monaco);
       props.singleton.onMount(editor, monaco);
       props.lsp.onMount(editor, monaco);
+      props.providers.onMount(editor, monaco);
 
       editor.updateOptions({});
     },
-    [props.models, props.singleton, props.lsp],
+    [props.models, props.singleton, props.lsp, props.providers],
   );
 
   return {

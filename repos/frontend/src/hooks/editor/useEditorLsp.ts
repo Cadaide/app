@@ -13,6 +13,10 @@ export function useEditorLsp(workspace: Workspace): IEditorLspOutput {
     (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
       Editor.instance.lsp.setWorkspace(workspace);
       Editor.instance.lsp.setMonaco(monaco);
+
+      editor.onDidChangeModelContent(() => {
+        Editor.instance.lsp.notifyFileChange(editor.getModel()!);
+      });
     },
     [workspace],
   );

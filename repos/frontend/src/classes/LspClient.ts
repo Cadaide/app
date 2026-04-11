@@ -9,6 +9,7 @@ import {
   WebSocketMessageReader,
   WebSocketMessageWriter,
 } from "vscode-ws-jsonrpc";
+import * as monaco from "monaco-editor";
 
 interface ILspClientMonacoPosition {
   lineNumber: number;
@@ -171,6 +172,9 @@ export class LspClient {
       },
       capabilities: {
         textDocument: {
+          documentSymbol: {
+            hierarchicalDocumentSymbolSupport: true,
+          },
           publishDiagnostics: {
             relatedInformation: true,
           },
@@ -464,6 +468,35 @@ export class LspClient {
       uri: monaco.Uri.parse(loc.uri),
       range: this.#lspToMonacoRange(loc.range, monaco),
     }));
+  }
+
+  async getDocumentSymbols(uri: monaco.Uri) {
+    if (!this.#connection || !this.#initialized) return [];
+
+    const result: any = await this.#connection.sendRequest(
+      "textDocument/documentSymbol",
+      { textDocument: { uri: uri.toString() } },
+    );
+
+    return result;
+  }
+
+  async findReferences(
+    uri: monaco.Uri,
+    position: { line: number; character: number },
+  ) {
+    if (!this.#connection || !this.#initialized) return [];
+
+    const result: any = await this.#connection.sendRequest(
+      "textDocument/references",
+      {
+        textDocument: { uri: uri.toString() },
+        position: position,
+        context: { includeDeclaration: true },
+      },
+    );
+
+    return result;
   }
 
   dispose() {
