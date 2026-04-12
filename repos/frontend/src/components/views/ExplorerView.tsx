@@ -1,5 +1,6 @@
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
 import { ExplorerFolder } from "../fs/Explorer";
+import { GhostScrollbar } from "../utils/GhostScrollbar";
 
 export function ExplorerView() {
   const workspace = useWorkspaceState((state) => state.workspace);
@@ -7,10 +8,14 @@ export function ExplorerView() {
   if (!workspace) return null; // TODO
 
   return (
-    <div className="w-full h-full bg-ctp-mantle overflow-auto">
+    <GhostScrollbar
+      direction="both"
+      thumbSize={8}
+      className="w-full h-full bg-ctp-mantle"
+    >
       <div className="min-w-fit flex flex-col">
         <ExplorerFolder folderEntry={workspace.filesystem.root} isRoot />
       </div>
-    </div>
+    </GhostScrollbar>
   );
 }

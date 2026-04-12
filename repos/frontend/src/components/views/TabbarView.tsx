@@ -4,6 +4,7 @@ import { Icon, IconifyIcon } from "@iconify/react";
 import { PiCircle, PiCircleFill, PiX } from "react-icons/pi";
 import { EditorHook, EditorHookId } from "@/classes/EditorHook";
 import { Editor } from "@/classes/Editor";
+import { GhostScrollbar } from "../utils/GhostScrollbar";
 
 interface ITabbarViewItemProps {
   path: string;
@@ -43,11 +44,11 @@ export function TabbarView() {
   }, [setDirty]);
 
   return (
-    <div
-      className="w-full h-12 bg-ctp-crust flex items-center overflow-x-hidden overflow-y-hidden hover:overflow-x-auto tabbar-scrollbar group"
-      onWheel={(e) => {
-        if (e.deltaY !== 0) e.currentTarget.scrollLeft += e.deltaY;
-      }}
+    <GhostScrollbar
+      direction="horizontal"
+      thumbSize={4}
+      className="w-full h-12 bg-ctp-crust"
+      contentClassName="flex items-center"
     >
       {tabs.map((tab) => (
         <TabbarViewItem
@@ -59,7 +60,7 @@ export function TabbarView() {
           isDirty={tab.dirty}
         />
       ))}
-    </div>
+    </GhostScrollbar>
   );
 }
 
