@@ -33,4 +33,14 @@ export const FsAPI = {
 
     return response.data;
   },
+  stat: async (path: string) => {
+    const response = await apiAdapter.get(`/filesystem/stat?path=${path}`);
+
+    return response.data.entry as FsEntry;
+  },
+  mkdir: async (path: string) => {
+    const response = await apiAdapter.post(`/filesystem/mkdir`, { path });
+
+    return response.data;
+  },
 };

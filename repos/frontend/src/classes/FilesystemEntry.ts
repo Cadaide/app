@@ -1,4 +1,7 @@
+import { FsAPI } from "@/api/fs";
 import path from "path";
+import { FilesystemFileEntry } from "./FilesystemFileEntry";
+import { FilesystemFolderEntry } from "./FilesystemFolderEntry";
 
 export abstract class FilesystemEntry {
   #path: string;
@@ -15,5 +18,18 @@ export abstract class FilesystemEntry {
 
   get path(): string {
     return this.#path;
+  }
+
+  static async fromPath(path: string): Promise<FilesystemEntry> {
+    const entry = await FsAPI.stat(path);
+
+    if (entry.type === "file") return new FilesystemFileEntry(entry.path);
+    else return new FilesystemFolderEntry(entry.path);
+  }
+
+  static async parent(path: string): Promise<FilesystemFolderEntry> {
+    const parentPath = path.split("/").slice(0, -1).join("/");
+
+    return new FilesystemFolderEntry(parentPath);
   }
 }

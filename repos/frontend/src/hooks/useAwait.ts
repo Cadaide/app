@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 export function useAwait<T>(
   promiseFactory: () => Promise<T>,
@@ -8,13 +8,16 @@ export function useAwait<T>(
   | {
       isLoading: true;
       data: null;
+      reload: () => Promise<void>;
     }
   | {
       isLoading: false;
       data: T | null;
+      reload: () => Promise<void>;
     } {
   const [isLoading, setIsLoading] = useState(shouldRun ? shouldRun() : true);
   const [data, setData] = useState<T | null>(null);
+  const [version, setVersion] = useState(0);
 
   const prevDepsRef = useRef(dependencies);
   const depsChanged = dependencies.some(
@@ -32,6 +35,10 @@ export function useAwait<T>(
       currentData = null;
     } else currentIsLoading = false;
   }
+
+  const reload = useCallback(async () => {
+    setVersion((v) => v + 1);
+  }, []);
 
   useEffect(() => {
     prevDepsRef.current = dependencies;
@@ -55,9 +62,9 @@ export function useAwait<T>(
     return () => {
       isMounted = false;
     };
-  }, dependencies);
+  }, [...dependencies, version]);
 
-  if (currentIsLoading) return { isLoading: true, data: null };
+  if (currentIsLoading) return { isLoading: true, data: null, reload };
 
-  return { isLoading: false, data: currentData };
+  return { isLoading: false, data: currentData, reload };
 }

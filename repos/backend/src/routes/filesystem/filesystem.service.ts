@@ -33,4 +33,16 @@ export class FilesystemService {
 
     return response;
   }
+
+  async stat(path: string) {
+    const response = await this.rpcService.call('fs.stat', { path });
+
+    return response;
+  }
+
+  async mkdir(path: string) {
+    const response = await this.rpcService.call('fs.mkdir', { path });
+
+    return response;
+  }
 }

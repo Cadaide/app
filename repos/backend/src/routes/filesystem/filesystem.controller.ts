@@ -24,4 +24,14 @@ export class FilesystemController {
   async writeFile(@Body() data: { path: string; content: string }) {
     return await this.filesystemService.writeFile(data.path, data.content);
   }
+
+  @Get('/stat')
+  async stat(@Query('path') path: string) {
+    return await this.filesystemService.stat(path);
+  }
+
+  @Post('/mkdir')
+  async mkdir(@Body() data: { path: string }) {
+    return await this.filesystemService.mkdir(data.path);
+  }
 }
