@@ -34,4 +34,9 @@ export class FilesystemController {
   async mkdir(@Body() data: { path: string }) {
     return await this.filesystemService.mkdir(data.path);
   }
+
+  @Post('/rm')
+  async rm(@Body() data: { path: string }) {
+    return await this.filesystemService.rm(data.path);
+  }
 }

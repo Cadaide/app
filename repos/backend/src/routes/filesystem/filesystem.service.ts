@@ -45,4 +45,10 @@ export class FilesystemService {
 
     return response;
   }
+
+  async rm(path: string) {
+    const response = await this.rpcService.call('fs.rm', { path });
+
+    return response;
+  }
 }

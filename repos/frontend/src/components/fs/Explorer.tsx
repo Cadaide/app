@@ -16,6 +16,7 @@ import { Button } from "../base/Button";
 import { FilesystemEntry } from "@/classes/FilesystemEntry";
 import { FsAPI } from "@/api/fs";
 import { ExplorerContext, useExplorer } from "@/contexts/ExplorerContext";
+import { ContextMenu } from "../base/ContextMenu";
 
 interface IExplorerFolderProps {
   folderEntry: FilesystemFolderEntry;
@@ -27,10 +28,21 @@ interface IExplorerFileProps {
 }
 
 export function ExplorerFolder(props: IExplorerFolderProps) {
-  const [isExpanded, setIsExpanded] = useState(props.isRoot ?? false);
+  const isExpandedInStore = useExplorerState((state) =>
+    state.expandedFolders.includes(props.folderEntry.path)
+  );
+
+  const [isExpanded, setIsExpanded] = useState(
+    (props.isRoot ?? false) || isExpandedInStore,
+  );
+
+  const parentExplorer = useExplorer();
 
   const selectedEntryPath = useExplorerState(
     (state) => state.selectedEntryPath,
+  );
+  const toggleFolderExpansion = useExplorerState(
+    (state) => state.toggleFolderExpansion,
   );
   const setSelectedEntryPath = useExplorerState(
     (state) => state.setSelectedEntryPath,
@@ -58,10 +70,17 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
   const { dialog: createFolderDialog, openDialog: openCreateFolderDialog } =
     useDialog((props) => <ExplorerCreateFolderDialog {...props} />);
 
+  const { dialog: removeDialog, openDialog: openRemoveDialog } = useDialog(
+    (props) => <ExplorerRemoveDialog {...props} />,
+  );
+
   return (
     <ExplorerContext.Provider
       value={{
-        reload: entries.reload,
+        reload: () => {
+          parentExplorer?.reload?.();
+          entries.reload();
+        },
       }}
     >
       <Expandable
@@ -72,10 +91,37 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
         collapsedIcon={
           props.isRoot ? "catppuccin:root" : props.folderEntry.icon
         }
-        defaultExpanded={props.isRoot}
+        defaultExpanded={isExpanded}
         isLoading={entries.isLoading}
         selected={selectedEntryPath === props.folderEntry.path}
-        onStateChange={(isExpanded) => setIsExpanded(isExpanded)}
+        onStateChange={(isExpanded) => {
+          setIsExpanded(isExpanded);
+          toggleFolderExpansion(props.folderEntry.path);
+        }}
+        headerContextMenuItems={[
+          {
+            label: "New folder",
+            onClick: () =>
+              openCreateFolderDialog({
+                parentPath: props.folderEntry.path,
+              }),
+          },
+          {
+            label: "New file",
+            onClick: () =>
+              openCreateEntityDialog({
+                parentPath: props.folderEntry.path,
+              }),
+          },
+          {
+            label: "Delete folder",
+            onClick: () =>
+              openRemoveDialog({
+                path: props.folderEntry.path,
+                type: "folder",
+              }),
+          },
+        ]}
         headerButtons={
           props.isRoot
             ? [
@@ -105,6 +151,7 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
       </Expandable>
       {createEntityDialog}
       {createFolderDialog}
+      {removeDialog}
     </ExplorerContext.Provider>
   );
 }
@@ -162,16 +209,21 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
 
   const onSubmit = useCallback(
     async (data: FormData) => {
-      // Use workspace root if nothing selected -- probably should set this as useState default
       if (!selectedEntryPath) return;
 
       let parentEntry: FilesystemFolderEntry;
 
-      const selectedEntry = await FilesystemEntry.fromPath(selectedEntryPath);
+      if (props.props?.parentPath) {
+        parentEntry = (await FilesystemEntry.fromPath(
+          props.props.parentPath,
+        )) as FilesystemFolderEntry;
+      } else {
+        const selectedEntry = await FilesystemEntry.fromPath(selectedEntryPath);
 
-      if (selectedEntry instanceof FilesystemFileEntry)
-        parentEntry = await FilesystemEntry.parent(selectedEntryPath);
-      else parentEntry = selectedEntry as FilesystemFolderEntry;
+        if (selectedEntry instanceof FilesystemFileEntry)
+          parentEntry = await FilesystemEntry.parent(selectedEntryPath);
+        else parentEntry = selectedEntry as FilesystemFolderEntry;
+      }
 
       const folderPath = `${parentEntry.path}/${data.get("name") as string}`;
 
@@ -182,7 +234,7 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
 
       explorer.reload();
     },
-    [selectedEntryPath, setSelectedEntryPath, explorer],
+    [selectedEntryPath, setSelectedEntryPath, explorer, props],
   );
 
   return (
@@ -197,6 +249,42 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
             </Button>
             <Button variant="primary" type="submit">
               Create
+            </Button>
+          </div>
+        </div>
+      </Form>
+    </>
+  );
+}
+
+function ExplorerRemoveDialog(props: IDialogProps) {
+  const explorer = useExplorer();
+
+  const onSubmit = useCallback(async () => {
+    const path = props.props?.path as string;
+    if (!path) throw new Error("No path selected");
+
+    await FsAPI.rm(path);
+
+    props.closeDialog();
+    explorer.reload();
+  }, [props, explorer]);
+
+  return (
+    <>
+      <DialogHeader title="Are you sure?" onClose={props.closeDialog} />
+      <Form onSubmit={onSubmit}>
+        <div className="flex flex-col gap-2">
+          <p>
+            Are you sure you want to permanently delete this {props.props?.type}
+            ?
+          </p>
+          <div className="flex flex-row items-center justify-end gap-2">
+            <Button variant="secondary" onClick={props.closeDialog}>
+              Cancel
+            </Button>
+            <Button variant="danger" type="submit">
+              Delete
             </Button>
           </div>
         </div>
