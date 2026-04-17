@@ -29,7 +29,7 @@ interface IExplorerFileProps {
 
 export function ExplorerFolder(props: IExplorerFolderProps) {
   const isExpandedInStore = useExplorerState((state) =>
-    state.expandedFolders.includes(props.folderEntry.path)
+    state.expandedFolders.includes(props.folderEntry.path),
   );
 
   const [isExpanded, setIsExpanded] = useState(
@@ -166,34 +166,56 @@ export function ExplorerFile(props: IExplorerFileProps) {
     (state) => state.setSelectedEntryPath,
   );
 
-  return (
-    <button
-      onClick={() => {
-        addTab(
-          props.fileEntry.path,
-          props.fileEntry.icon,
-          props.fileEntry.name,
-        );
+  const { dialog: removeDialog, openDialog: openRemoveDialog } = useDialog(
+    (props) => <ExplorerRemoveDialog {...props} />,
+  );
 
-        setSelectedEntryPath(props.fileEntry.path);
-      }}
-      className={`w-full flex flex-row items-center gap-1.5 px-1.5 py-1 hover:bg-ctp-surface0 cursor-pointer transition-colors text-ctp-text ${
-        selectedEntryPath === props.fileEntry.path ? "bg-ctp-surface1/30" : ""
-      }`}
-    >
-      <div className="w-4 h-4" />
-      <div className="w-5 h-5">
-        <Icon
-          icon={props.fileEntry.icon}
-          width={20}
-          height={20}
-          className="shrink-0 text-ctp-lavender"
-        />
-      </div>
-      <span className="text-ctp-text text-[15px] whitespace-nowrap">
-        {props.fileEntry.name}
-      </span>
-    </button>
+  return (
+    <>
+      <ContextMenu
+        items={[
+          {
+            label: "Delete file",
+            onClick: () =>
+              openRemoveDialog({
+                path: props.fileEntry.path,
+                type: "file",
+              }),
+          },
+        ]}
+      >
+        <button
+          onClick={() => {
+            addTab(
+              props.fileEntry.path,
+              props.fileEntry.icon,
+              props.fileEntry.name,
+            );
+
+            setSelectedEntryPath(props.fileEntry.path);
+          }}
+          className={`w-full flex flex-row items-center gap-1.5 px-1.5 py-1 hover:bg-ctp-surface0 cursor-pointer transition-colors text-ctp-text ${
+            selectedEntryPath === props.fileEntry.path
+              ? "bg-ctp-surface1/30"
+              : ""
+          }`}
+        >
+          <div className="w-4 h-4" />
+          <div className="w-5 h-5">
+            <Icon
+              icon={props.fileEntry.icon}
+              width={20}
+              height={20}
+              className="shrink-0 text-ctp-lavender"
+            />
+          </div>
+          <span className="text-ctp-text text-[15px] whitespace-nowrap">
+            {props.fileEntry.name}
+          </span>
+        </button>
+      </ContextMenu>
+      {removeDialog}
+    </>
   );
 }
 
