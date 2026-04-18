@@ -3,6 +3,7 @@ package handlers
 import (
 	"cadaide/fs/src/filesystem"
 	"os"
+	"path"
 )
 
 type ListDirParams struct {
@@ -27,7 +28,7 @@ func HandleListDir(params ListDirParams) (ListDirResult, error) {
 			filetype = filesystem.FileTypeDirectory
 		}
 
-		entries = append(entries, filesystem.FileInfo{Name: dir.Name(), Path: params.Path + "/" + dir.Name(), Type: filetype})
+		entries = append(entries, filesystem.FileInfo{Name: dir.Name(), Path: path.Join(params.Path, dir.Name()), Type: filetype})
 	}
 
 	return ListDirResult{Entries: entries}, nil
