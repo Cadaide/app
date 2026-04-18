@@ -39,4 +39,9 @@ export class FilesystemController {
   async rm(@Body() data: { path: string }) {
     return await this.filesystemService.rm(data.path);
   }
+
+  @Post('/mv')
+  async mv(@Body() data: { path: string; dest: string }) {
+    return await this.filesystemService.mv(data.path, data.dest);
+  }
 }

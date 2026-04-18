@@ -48,4 +48,9 @@ export const FsAPI = {
 
     return response.data;
   },
+  mv: async (path: string, dest: string) => {
+    const response = await apiAdapter.post(`/filesystem/mv`, { path, dest });
+
+    return response.data;
+  },
 };

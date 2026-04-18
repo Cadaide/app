@@ -1,5 +1,5 @@
 import { Icon, IconifyIcon, IconifyIconName } from "@iconify/react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { IconType } from "react-icons";
 import { PiCaretRight } from "react-icons/pi";
 import { LoadingSpinner } from "../base/LoadingSpinner";
@@ -13,6 +13,7 @@ interface IExpandableHeaderButton {
 
 interface IExpandableProps {
   defaultExpanded?: boolean;
+  expanded?: boolean;
   title: string;
   expandedIcon?: IconType | IconifyIcon | string;
   collapsedIcon?: IconType | IconifyIcon | string;
@@ -31,7 +32,13 @@ interface IExpandableIconProps {
 }
 
 export function Expandable(props: IExpandableProps) {
-  const [isExpanded, setIsExpanded] = useState(props.defaultExpanded ?? false);
+  const [isExpanded, setIsExpanded] = useState(
+    props.expanded ?? props.defaultExpanded ?? false,
+  );
+
+  useEffect(() => {
+    if (props.expanded !== undefined) setIsExpanded(props.expanded);
+  }, [props.expanded]);
 
   return (
     <div className="flex flex-col">

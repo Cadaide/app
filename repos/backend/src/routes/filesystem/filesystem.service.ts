@@ -51,4 +51,10 @@ export class FilesystemService {
 
     return response;
   }
+
+  async mv(path: string, dest: string) {
+    const response = await this.rpcService.call('fs.mv', { path, dest });
+
+    return response;
+  }
 }

@@ -35,6 +35,7 @@ var handlerMap = map[string]func(json.RawMessage) (interface{}, error){
 	"fs.stat":      makeHandler(handlers.HandleStat),
 	"fs.mkdir":     makeHandler(handlers.HandleMkdir),
 	"fs.rm":        makeHandler(handlers.HandleRm),
+	"fs.mv":        makeHandler(handlers.HandleMv),
 	"health":       makeHandler(handlers.HandleHealth),
 }
 
