@@ -9,6 +9,7 @@ import { LoadingScreen } from "../base/LoadingScreen";
 import { CodePathView } from "../views/CodePathView";
 import { HomeScreen } from "../screen/HomeScreen";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
+import { BrowserPlatformCompat } from "@/platform/browser/compat/_compat";
 
 const CodeEditor = dynamic(
   async () => (await import("../editor/CodeEditor")).CodeEditor,
@@ -43,6 +44,8 @@ export function AppShell() {
         )}
       </div>
       <Bottombar />
+
+      <BrowserPlatformCompat />
     </div>
   );
 }

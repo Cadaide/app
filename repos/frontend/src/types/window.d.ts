@@ -3,9 +3,8 @@ export {};
 declare global {
   interface Window {
     api: {
-      //fetch: (endpoint: string, options: any) => Promise<any>;
+      platform: "native" | "";
       openSelectDirectoryDialog: () => Promise<string | null>;
-      //setActivity: (file: string) => Promise<void>;
       beginWindowDrag: (x: number, y: number) => Promise<void>;
       windowClose: () => Promise<void>;
       windowMinimize: () => Promise<void>;

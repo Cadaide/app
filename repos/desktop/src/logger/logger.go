@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,7 +35,8 @@ func Init(logfilePath string) {
 		panic(err)
 	}
 
-	log.SetOutput(file)
+	mw := io.MultiWriter(os.Stdout, file)
+	log.SetOutput(mw)
 }
 
 func Close() {

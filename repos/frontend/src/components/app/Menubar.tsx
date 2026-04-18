@@ -107,9 +107,7 @@ export function Menubar() {
           {
             type: "item",
             label: "Open folder...",
-            onClick: Application.isNative
-              ? handleOpenProject
-              : handleOpenProjectPI,
+            onClick: handleOpenProject,
           },
           {
             type: "item",
@@ -125,6 +123,16 @@ export function Menubar() {
       },
       {
         label: "Window",
+        entries: [
+          {
+            type: "item",
+            label: "Reload window",
+            onClick: () => window.location.reload(),
+          },
+        ],
+      },
+      {
+        label: "DEV",
         entries: [
           {
             type: "item",

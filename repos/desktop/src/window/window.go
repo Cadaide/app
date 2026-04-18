@@ -126,9 +126,11 @@ func newLorcaWindow(config WindowConfig) *Window {
 	ui.Bind("__windowMaximize", func() {})
 	ui.Bind("__windowRestore", func() {})
 	ui.Bind("__windowIsMaximized", func() int { return 0 })
+	ui.Bind("__windowLog", func(msg string) { log.Println(msg) })
 
 	ui.Eval(`
 		window.api = {
+			platform: "native",
 			openSelectDirectoryDialog: () => window.__openFolderPicker(),
 			beginWindowDrag: (x, y) => window.__beginWindowDrag(x, y),
 			windowClose: () => window.__windowClose(),
@@ -137,6 +139,8 @@ func newLorcaWindow(config WindowConfig) *Window {
 			windowRestore: () => window.__windowRestore(),
 			windowIsMaximized: () => window.__windowIsMaximized(),
 		}
+
+		console.log = (...args) => window.__windowLog(args.join(" "));
 	`)
 
 	return &Window{
@@ -178,8 +182,11 @@ func newWebviewWindow(config WindowConfig) *Window {
 		return int(C.window_is_maximized(unsafe.Pointer(wv.Window())))
 	})
 
+	wv.Bind("__windowLog", func(msg string) { log.Println(msg) })
+
 	wv.Init(`
 		window.api = {
+			platform: "native",
 			openSelectDirectoryDialog: () => window.__openFolderPicker(),
 			beginWindowDrag: (x, y) => window.__beginWindowDrag(x, y),
 			windowClose: () => window.__windowClose(),
@@ -188,6 +195,15 @@ func newWebviewWindow(config WindowConfig) *Window {
 			windowRestore: () => window.__windowRestore(),
 			windowIsMaximized: () => window.__windowIsMaximized(),
 		}
+
+		console.log = (...args) =>
+			window.__windowLog(
+				args
+					.map((arg) =>
+						typeof arg === "object" ? JSON.stringify(arg) : arg,
+					)
+					.join(" "),
+			);
 	`)
 
 	return &Window{

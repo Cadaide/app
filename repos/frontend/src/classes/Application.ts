@@ -35,6 +35,10 @@ export class Application {
   }
 
   static get isNative() {
-    return typeof window !== "undefined" && window.api !== undefined;
+    return (
+      typeof window !== "undefined" &&
+      window.api !== undefined &&
+      window.api.platform === "native"
+    );
   }
 }
