@@ -17,42 +17,101 @@ export function ContextMenu(props: IContextMenuProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    let x = e.clientX;
-    let y = e.clientY;
+      window.dispatchEvent(new Event("close-context-menus"));
 
-    const expectedWidth = 180;
-    const expectedHeight = props.items.length * 36 + 12;
+      let x = e.clientX;
+      let y = e.clientY;
 
-    if (x + expectedWidth > window.innerWidth)
-      x = window.innerWidth - expectedWidth - 8;
-    if (y + expectedHeight > window.innerHeight)
-      y = window.innerHeight - expectedHeight - 8;
+      const expectedWidth = 180;
+      const expectedHeight = props.items.length * 36 + 12;
 
-    setPosition({ x, y });
-    setIsOpen(true);
-  };
+      if (x + expectedWidth > window.innerWidth)
+        x = window.innerWidth - expectedWidth - 8;
+      if (y + expectedHeight > window.innerHeight)
+        y = window.innerHeight - expectedHeight - 8;
+
+      setPosition({ x, y });
+      setIsOpen(true);
+    },
+    [props.items.length],
+  );
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    const handleCloseEvent = () => closeMenu();
 
-    const handleGlobalClick = () => closeMenu();
-
-    window.addEventListener("click", handleGlobalClick);
-    window.addEventListener("contextmenu", handleGlobalClick);
-    window.addEventListener("scroll", handleGlobalClick, true);
+    window.addEventListener("close-context-menus", handleCloseEvent);
 
     return () => {
-      window.removeEventListener("click", handleGlobalClick);
-      window.removeEventListener("contextmenu", handleGlobalClick);
-      window.removeEventListener("scroll", handleGlobalClick, true);
+      window.removeEventListener("close-context-menus", handleCloseEvent);
+    };
+  }, [closeMenu]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsideInteraction = (e: Event) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      closeMenu();
+
+      if (e.type === "mousedown") {
+        const blockClick = (clickEvent: Event) => {
+          clickEvent.stopPropagation();
+          clickEvent.preventDefault();
+
+          window.removeEventListener("click", blockClick, { capture: true });
+        };
+
+        window.addEventListener("click", blockClick, { capture: true });
+
+        setTimeout(
+          () =>
+            window.removeEventListener("click", blockClick, {
+              capture: true,
+            }),
+          400,
+        );
+      }
+    };
+
+    const handleWindowContextMenu = (e: Event) => {
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) return;
+
+      closeMenu();
+    };
+
+    const handleScroll = () => closeMenu();
+
+    window.addEventListener("mousedown", handleOutsideInteraction, {
+      capture: true,
+    });
+    window.addEventListener("click", handleOutsideInteraction, {
+      capture: true,
+    });
+    window.addEventListener("contextmenu", handleWindowContextMenu);
+    window.addEventListener("scroll", handleScroll, { capture: true });
+
+    return () => {
+      window.removeEventListener("mousedown", handleOutsideInteraction, {
+        capture: true,
+      });
+      window.removeEventListener("click", handleOutsideInteraction, {
+        capture: true,
+      });
+      window.removeEventListener("contextmenu", handleWindowContextMenu);
+      window.removeEventListener("scroll", handleScroll, { capture: true });
     };
   }, [isOpen, closeMenu]);
 
