@@ -7,7 +7,7 @@ import { FilesystemFileEntry } from "@/classes/FilesystemFileEntry";
 import { Icon } from "@iconify/react";
 import { useCallback, useState } from "react";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
-import { PiFolderPlus, PiPlus } from "react-icons/pi";
+import { PiArrowClockwise, PiFolderPlus, PiPlus } from "react-icons/pi";
 import { useExplorerState } from "@/hooks/stores/useExplorerState";
 import { IDialogProps, useDialog } from "@/hooks/useDialog";
 import { DialogHeader } from "../base/Dialog";
@@ -93,7 +93,12 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
         data={`folder:${props.folderEntry.path}`}
         image={
           <div className="flex flex-row items-center gap-2 px-3 py-1.5 bg-ctp-surface0/90 backdrop-blur-sm shadow border border-ctp-surface1 rounded-md text-ctp-text whitespace-nowrap w-max">
-            <Icon icon={props.isRoot ? "catppuccin:root" : props.folderEntry.icon} width={20} height={20} className="text-ctp-lavender" />
+            <Icon
+              icon={props.isRoot ? "catppuccin:root" : props.folderEntry.icon}
+              width={20}
+              height={20}
+              className="text-ctp-lavender"
+            />
             <span className="text-[15px]">{props.folderEntry.name}</span>
           </div>
         }
@@ -105,90 +110,106 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
             setIsExpanded(true);
           }}
           onDrop={async (data) => {
-            if (!data.startsWith("file:") && !data.startsWith("folder:")) return;
+            if (!data.startsWith("file:") && !data.startsWith("folder:"))
+              return;
 
             const type = data.split(":")[0];
             const sourcePath = data.substring(type.length + 1);
             const fileName = sourcePath.split("/").pop();
             const targetPath = props.folderEntry.path + "/" + fileName;
 
-            if (targetPath === sourcePath || targetPath.startsWith(sourcePath + "/")) return;
+            if (
+              targetPath === sourcePath ||
+              targetPath.startsWith(sourcePath + "/")
+            )
+              return;
 
             await FsAPI.mv(sourcePath, targetPath);
 
             renameExplorerPath(sourcePath, targetPath);
             renameTabbarPath(sourcePath, targetPath);
-            Editor.instance.renameFile(sourcePath, targetPath, type === "folder");
+            Editor.instance.renameFile(
+              sourcePath,
+              targetPath,
+              type === "folder",
+            );
 
             parentExplorer?.reload?.();
             entries.reload();
           }}
         >
           <Expandable
-          title={props.folderEntry.name}
-          expandedIcon={
-            props.isRoot ? "catppuccin:root-open" : props.folderEntry.icon
-          }
-          collapsedIcon={
-            props.isRoot ? "catppuccin:root" : props.folderEntry.icon
-          }
-          expanded={isExpanded}
-          isLoading={entries.isLoading}
-          selected={selectedEntryPath === props.folderEntry.path}
-          onStateChange={(isExpanded) => {
-            setIsExpanded(isExpanded);
-            toggleFolderExpansion(props.folderEntry.path);
-          }}
-          headerContextMenuItems={[
-            {
-              label: "New folder",
-              onClick: () =>
-                openCreateFolderDialog({
-                  parentPath: props.folderEntry.path,
-                }),
-            },
-            {
-              label: "New file",
-              onClick: () =>
-                openCreateEntityDialog({
-                  parentPath: props.folderEntry.path,
-                }),
-            },
-            {
-              label: "Delete folder",
-              onClick: () =>
-                openRemoveDialog({
-                  path: props.folderEntry.path,
-                  type: "folder",
-                }),
-            },
-          ]}
-          headerButtons={
-            props.isRoot
-              ? [
-                  {
-                    icon: PiFolderPlus,
-                    onClick: openCreateFolderDialog,
-                  },
-                  {
-                    icon: PiPlus,
-                    onClick: openCreateEntityDialog,
-                  },
-                ]
-              : undefined
-          }
-          onClick={() => {
-            setSelectedEntryPath(props.folderEntry.path);
-          }}
-        >
-          {isExpanded &&
-            entries.data?.map((entry) =>
-              entry instanceof FilesystemFolderEntry ? (
-                <ExplorerFolder key={entry.path} folderEntry={entry} />
-              ) : (
-                <ExplorerFile key={entry.path} fileEntry={entry} />
-              ),
-            )}
+            title={props.folderEntry.name}
+            expandedIcon={
+              props.isRoot ? "catppuccin:root-open" : props.folderEntry.icon
+            }
+            collapsedIcon={
+              props.isRoot ? "catppuccin:root" : props.folderEntry.icon
+            }
+            expanded={isExpanded}
+            isLoading={entries.isLoading}
+            selected={selectedEntryPath === props.folderEntry.path}
+            onStateChange={(isExpanded) => {
+              setIsExpanded(isExpanded);
+              toggleFolderExpansion(props.folderEntry.path);
+            }}
+            headerContextMenuItems={[
+              {
+                label: "New folder",
+                onClick: () =>
+                  openCreateFolderDialog({
+                    parentPath: props.folderEntry.path,
+                  }),
+              },
+              {
+                label: "New file",
+                onClick: () =>
+                  openCreateEntityDialog({
+                    parentPath: props.folderEntry.path,
+                  }),
+              },
+              {
+                label: "Delete folder",
+                onClick: () =>
+                  openRemoveDialog({
+                    path: props.folderEntry.path,
+                    type: "folder",
+                  }),
+              },
+            ]}
+            headerButtons={
+              props.isRoot
+                ? [
+                    {
+                      icon: PiArrowClockwise,
+                      onClick: () => {
+                        parentExplorer?.reload?.();
+                        entries.reload();
+                      },
+                    },
+                    {
+                      icon: PiFolderPlus,
+                      onClick: openCreateFolderDialog,
+                    },
+                    {
+                      icon: PiPlus,
+                      onClick: openCreateEntityDialog,
+                    },
+                  ]
+                : undefined
+            }
+            onClick={() => {
+              setSelectedEntryPath(props.folderEntry.path);
+            }}
+          >
+            {isExpanded &&
+              entries.data?.map((entry) =>
+                entry instanceof FilesystemFolderEntry ? (
+                  <ExplorerFolder key={entry.path} folderEntry={entry} />
+                ) : (
+                  <ExplorerFile key={entry.path} fileEntry={entry} />
+                ),
+              )}
           </Expandable>
         </DraggableDropArea>
       </Draggable>
@@ -231,7 +252,12 @@ export function ExplorerFile(props: IExplorerFileProps) {
           data={`file:${props.fileEntry.path}`}
           image={
             <div className="flex flex-row items-center gap-2 px-3 py-1.5 bg-ctp-surface0/90 backdrop-blur-sm shadow border border-ctp-surface1 rounded-md text-ctp-text whitespace-nowrap w-max">
-              <Icon icon={props.fileEntry.icon} width={20} height={20} className="text-ctp-lavender" />
+              <Icon
+                icon={props.fileEntry.icon}
+                width={20}
+                height={20}
+                className="text-ctp-lavender"
+              />
               <span className="text-[15px]">{props.fileEntry.name}</span>
             </div>
           }
