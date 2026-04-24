@@ -158,8 +158,71 @@ export class Editor {
 
     // TODO: Add dirty warning
 
+    this.lsp.notifyFileClose(model);
+
     model.dispose();
     this.#models.delete(path);
+  }
+
+  async renameFile(oldPath: string, newPath: string, isFolder: boolean = false) {
+    const oldNormalized = oldPath.replaceAll("\\", "/");
+    const newNormalized = newPath.replaceAll("\\", "/");
+
+    const modelsToRename: {
+      oldUri: string;
+      newUri: string;
+      content: string;
+      language: string;
+      isCurrent: boolean;
+    }[] = [];
+
+    this.#models.forEach((model, uriString) => {
+      const uriPath = monaco.Uri.parse(uriString).path;
+
+      if (
+        uriPath === oldNormalized ||
+        uriPath.startsWith(oldNormalized + "/")
+      ) {
+        const suffix = uriPath.substring(oldNormalized.length);
+        const newUriPath = newNormalized + suffix;
+
+        modelsToRename.push({
+          oldUri: uriString,
+          newUri: monaco.Uri.file(newUriPath).toString(),
+          content: model.getValue(),
+          language: model.getLanguageId(),
+          isCurrent: this.#editor?.getModel()?.uri.toString() === uriString,
+        });
+      }
+    });
+
+    for (const item of modelsToRename) {
+      const oldModel = this.#models.get(item.oldUri);
+
+      if (oldModel) {
+        this.lsp.notifyFileClose(oldModel);
+        oldModel.dispose();
+      }
+
+      this.#models.delete(item.oldUri);
+    }
+
+    this.lsp.notifyFileRename(oldNormalized, newNormalized, isFolder);
+
+    for (const item of modelsToRename) {
+      const newModel = this.monaco.editor.createModel(
+        item.content,
+        item.language,
+        monaco.Uri.parse(item.newUri),
+      );
+
+      this.addModel(newModel);
+      this.lsp.notifyFileOpen(newModel);
+
+      if (item.isCurrent && this.#editor) {
+        this.#editor.setModel(newModel);
+      }
+    }
   }
 
   async saveFile(path: string, content: string) {

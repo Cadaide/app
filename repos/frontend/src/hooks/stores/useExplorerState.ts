@@ -6,6 +6,7 @@ interface IExplorerStateStore {
 
   setSelectedEntryPath: (path: string | null) => void;
   toggleFolderExpansion: (path: string) => void;
+  renamePath: (oldPath: string, newPath: string) => void;
 }
 
 export const useExplorerState = create<IExplorerStateStore>((set, get) => ({
@@ -27,4 +28,20 @@ export const useExplorerState = create<IExplorerStateStore>((set, get) => ({
       };
     });
   },
+  renamePath: (oldPath, newPath) =>
+    set((state) => {
+      const renameNode = (p: string) => {
+        if (p === oldPath || p.startsWith(oldPath + "/"))
+          return newPath + p.substring(oldPath.length);
+
+        return p;
+      };
+
+      return {
+        selectedEntryPath: state.selectedEntryPath
+          ? renameNode(state.selectedEntryPath)
+          : null,
+        expandedFolders: state.expandedFolders.map(renameNode),
+      };
+    }),
 }));

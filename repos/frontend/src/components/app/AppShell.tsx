@@ -46,6 +46,8 @@ export function AppShell() {
       <Bottombar />
 
       <BrowserPlatformCompat />
+
+      <div id="ghost-container" className="absolute top-[-9999px] left-[-9999px]" />
     </div>
   );
 }

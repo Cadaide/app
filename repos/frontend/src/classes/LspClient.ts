@@ -171,6 +171,11 @@ export class LspClient {
         },
       },
       capabilities: {
+        workspace: {
+          fileOperations: {
+            didRename: true,
+          },
+        },
         textDocument: {
           documentSymbol: {
             hierarchicalDocumentSymbolSupport: true,
@@ -225,6 +230,35 @@ export class LspClient {
     this.#connection.sendNotification("textDocument/didChange", {
       textDocument: { uri, version },
       contentChanges: [{ text }],
+    });
+  }
+
+  sendDidClose(uri: string) {
+    if (!this.#connection || !this.#initialized) return;
+
+    this.#documentVersions.delete(uri);
+    this.#connection.sendNotification("textDocument/didClose", {
+      textDocument: { uri },
+    });
+  }
+
+  sendDidRename(oldUri: string, newUri: string) {
+    if (!this.#connection || !this.#initialized) return;
+
+    this.#connection.sendNotification("workspace/didRenameFiles", {
+      files: [
+        {
+          oldUri,
+          newUri,
+        },
+      ],
+    });
+
+    this.#connection.sendNotification("workspace/didChangeWatchedFiles", {
+      changes: [
+        { uri: oldUri, type: 3 },
+        { uri: newUri, type: 1 },
+      ],
     });
   }
 

@@ -17,6 +17,7 @@ export const useTabbarViewState = create<{
   setActiveTab: (path: string) => void;
   setDirty: (path: string, dirty: boolean) => void;
   closeTabs: () => void;
+  renamePath: (oldPrefix: string, newPrefix: string) => void;
 }>()(
   persist(
     (set, get) => ({
@@ -67,6 +68,25 @@ export const useTabbarViewState = create<{
           ),
         })),
       closeTabs: () => set({ tabs: [], activeTabPath: null }),
+      renamePath: (oldPath, newPath) =>
+        set((state) => {
+          const renameNode = (p: string) => {
+            if (p === oldPath || p.startsWith(oldPath + "/"))
+              return newPath + p.substring(oldPath.length);
+
+            return p;
+          };
+
+          return {
+            tabs: state.tabs.map((tab) => ({
+              ...tab,
+              path: renameNode(tab.path),
+            })),
+            activeTabPath: state.activeTabPath
+              ? renameNode(state.activeTabPath)
+              : null,
+          };
+        }),
     }),
     {
       name: "tabbar-view-state",

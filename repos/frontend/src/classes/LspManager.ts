@@ -75,6 +75,32 @@ export class LspManager {
     client.sendDidChange(model.uri.toString(), model.getValue());
   }
 
+  notifyFileClose(model: editor.ITextModel) {
+    const lspLanguage = model.getLanguageId();
+    if (!lspLanguage) return;
+
+    const client = this.#clients.get(lspLanguage);
+    if (!client) return;
+
+    client.sendDidClose(model.uri.toString());
+  }
+
+  notifyFileRename(oldPath: string, newPath: string, isFolder: boolean = false) {
+    if (!this.#monaco) return;
+
+    let oldUri = this.#monaco.Uri.file(oldPath.replaceAll("\\", "/")).toString();
+    let newUri = this.#monaco.Uri.file(newPath.replaceAll("\\", "/")).toString();
+
+    if (isFolder) {
+      if (!oldUri.endsWith("/")) oldUri += "/";
+      if (!newUri.endsWith("/")) newUri += "/";
+    }
+
+    this.#clients.forEach((client) => {
+      client.sendDidRename(oldUri, newUri);
+    });
+  }
+
   async getDocumentSymbols(uri: monaco.Uri, languageId: string) {
     const client = await this.#getLspForLanguage(languageId);
 

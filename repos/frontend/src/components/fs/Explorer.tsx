@@ -1,4 +1,5 @@
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
+import { Editor } from "@/classes/Editor";
 import { Expandable } from "../utils/Expandable";
 import { FilesystemFolderEntry } from "@/classes/FilesystemFolderEntry";
 import { useAwait } from "@/hooks/useAwait";
@@ -49,6 +50,9 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
     (state) => state.setSelectedEntryPath,
   );
 
+  const renameExplorerPath = useExplorerState((state) => state.renamePath);
+  const renameTabbarPath = useTabbarViewState((state) => state.renamePath);
+
   const entries = useAwait(
     () => props.folderEntry.ls(),
     [props.folderEntry, isExpanded],
@@ -84,27 +88,43 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
         },
       }}
     >
-      <DraggableDropArea
-        onDragOver={(data) => {
-          if (isExpanded) return;
-
-          setIsExpanded(true);
-        }}
-        onDrop={async (data) => {
-          if (!data.startsWith("file:")) return;
-
-          await FsAPI.mv(
-            data.split("file:")[1],
-            props.folderEntry.path +
-              "/" +
-              data.split("file:")[1].split("/").pop(),
-          );
-
-          parentExplorer?.reload?.();
-          entries.reload();
-        }}
+      <Draggable
+        disabled={props.isRoot}
+        data={`folder:${props.folderEntry.path}`}
+        image={
+          <div className="flex flex-row items-center gap-2 px-3 py-1.5 bg-ctp-surface0/90 backdrop-blur-sm shadow border border-ctp-surface1 rounded-md text-ctp-text whitespace-nowrap w-max">
+            <Icon icon={props.isRoot ? "catppuccin:root" : props.folderEntry.icon} width={20} height={20} className="text-ctp-lavender" />
+            <span className="text-[15px]">{props.folderEntry.name}</span>
+          </div>
+        }
       >
-        <Expandable
+        <DraggableDropArea
+          onDragOver={(data) => {
+            if (isExpanded) return;
+
+            setIsExpanded(true);
+          }}
+          onDrop={async (data) => {
+            if (!data.startsWith("file:") && !data.startsWith("folder:")) return;
+
+            const type = data.split(":")[0];
+            const sourcePath = data.substring(type.length + 1);
+            const fileName = sourcePath.split("/").pop();
+            const targetPath = props.folderEntry.path + "/" + fileName;
+
+            if (targetPath === sourcePath || targetPath.startsWith(sourcePath + "/")) return;
+
+            await FsAPI.mv(sourcePath, targetPath);
+
+            renameExplorerPath(sourcePath, targetPath);
+            renameTabbarPath(sourcePath, targetPath);
+            Editor.instance.renameFile(sourcePath, targetPath, type === "folder");
+
+            parentExplorer?.reload?.();
+            entries.reload();
+          }}
+        >
+          <Expandable
           title={props.folderEntry.name}
           expandedIcon={
             props.isRoot ? "catppuccin:root-open" : props.folderEntry.icon
@@ -169,8 +189,9 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
                 <ExplorerFile key={entry.path} fileEntry={entry} />
               ),
             )}
-        </Expandable>
-      </DraggableDropArea>
+          </Expandable>
+        </DraggableDropArea>
+      </Draggable>
       {createEntityDialog}
       {createFolderDialog}
       {removeDialog}
@@ -206,7 +227,15 @@ export function ExplorerFile(props: IExplorerFileProps) {
           },
         ]}
       >
-        <Draggable data={`file:${props.fileEntry.path}`}>
+        <Draggable
+          data={`file:${props.fileEntry.path}`}
+          image={
+            <div className="flex flex-row items-center gap-2 px-3 py-1.5 bg-ctp-surface0/90 backdrop-blur-sm shadow border border-ctp-surface1 rounded-md text-ctp-text whitespace-nowrap w-max">
+              <Icon icon={props.fileEntry.icon} width={20} height={20} className="text-ctp-lavender" />
+              <span className="text-[15px]">{props.fileEntry.name}</span>
+            </div>
+          }
+        >
           <button
             onClick={() => {
               addTab(
