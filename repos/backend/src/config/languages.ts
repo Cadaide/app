@@ -28,6 +28,8 @@ export interface ILanguageConfig {
     command: string[];
   };
   fileTemplates: ILanguageFileTemplateGroup[];
+  identityFiles: string[];
+  sourcePatterns: string[];
 }
 
 export const LanguageConfig: {

@@ -354,9 +354,17 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
 }
 
 function ExplorerCreateEntityDialog(props: IDialogProps) {
+  const workspace = useWorkspaceState((state) => state.workspace);
+
+  const { isLoading: detecting, data: detectedLanguage } = useAwait(
+    () => workspace?.getLanguage()!,
+    [workspace],
+  );
+
   const { isLoading, data } = useAwait(
-    () => API.language.getConfig("typescript"),
-    [],
+    () => API.language.getConfig(detectedLanguage!),
+    [workspace, detectedLanguage],
+    () => !!workspace,
   );
 
   const [selectedTemplate, setSelectedTemplate] = useState<string>();

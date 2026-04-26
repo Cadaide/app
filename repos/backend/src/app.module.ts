@@ -4,6 +4,7 @@ import { LspModule } from './routes/lsp/lsp.module';
 import { ConfigModule } from './routes/config/config.module';
 import { HealthModule } from './routes/health/health.module';
 import { LanguageModule } from './routes/language/language.module';
+import { ProjectModule } from './routes/project/project.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { LanguageModule } from './routes/language/language.module';
     FilesystemModule,
     LspModule,
     LanguageModule,
+    ProjectModule,
   ],
 })
 export class AppModule {}

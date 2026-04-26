@@ -69,4 +69,15 @@ export const TypeScriptLanguageConfig: ILanguageConfig = {
       ],
     },
   ],
+  identityFiles: [
+    'tsconfig.json',
+    'jsconfig.json',
+    'package.json',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+    'bun.lock',
+    'bun.lockb',
+  ],
+  sourcePatterns: ['*.ts', '*.tsx', '*.cts', '*.d.ts', '*.d.cts', '*.d.mts'],
 };

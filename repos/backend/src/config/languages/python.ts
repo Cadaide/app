@@ -18,13 +18,36 @@ export const PythonLanguageConfig: ILanguageConfig = {
       name: 'Basic',
       entries: [
         {
+          id: 'blank',
+          name: 'Blank file',
+          icon: 'codicon:file',
+          filename: '{{name}}.py',
+          content: '',
+          formElements: [
+            {
+              id: 'name',
+              label: 'Name',
+              placeholder: 'myFile',
+            },
+          ],
+        },
+        {
           id: 'class',
           name: 'Class',
-          icon: 'lucide:class',
+          icon: 'codicon:symbol-class',
           filename: '{{name}}.py',
-          content: 'class {{name}}:\n  def __init__(self):\n    pass\n',
+          content: 'class {{name:pascal}}:\n  def __init__(self):\n    pass\n',
+          formElements: [
+            {
+              id: 'name',
+              label: 'Class name',
+              placeholder: 'MyClass',
+            },
+          ],
         },
       ],
     },
   ],
+  identityFiles: ['pyproject.toml', 'requirements.txt'],
+  sourcePatterns: ['*.py'],
 };

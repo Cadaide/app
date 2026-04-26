@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FilesystemController } from './filesystem.controller';
 import { FilesystemService } from './filesystem.service';
-import { join } from 'path';
 import { RPC_BINARY, RPCService } from 'src/services/RPC.service';
 
 @Module({
@@ -15,5 +14,6 @@ import { RPC_BINARY, RPCService } from 'src/services/RPC.service';
     RPCService,
     FilesystemService,
   ],
+  exports: [FilesystemService],
 })
 export class FilesystemModule {}
