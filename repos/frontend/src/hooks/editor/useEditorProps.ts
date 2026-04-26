@@ -95,6 +95,7 @@ export function useEditorProps(props: {
     theme: props.theme.theme,
     options: {
       ...props.theme.options,
+      automaticLayout: true,
     },
 
     keepCurrentModel: true,

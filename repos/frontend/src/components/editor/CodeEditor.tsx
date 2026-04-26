@@ -27,7 +27,7 @@ export function CodeEditor(props: ICodeEditorProps) {
   });
 
   return (
-    <div className="w-full h-full">
+    <div className="flex-1 w-full h-full min-h-0 min-w-0 overflow-hidden">
       <Editor {...editorProps} loading={null} />
     </div>
   );
