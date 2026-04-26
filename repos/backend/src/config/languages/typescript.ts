@@ -12,4 +12,13 @@ export const TypeScriptLanguageConfig: ILanguageConfig = {
       '--stdio',
     ],
   },
+  fileTemplates: [
+    {
+      id: 'class',
+      name: 'Class',
+      icon: 'lucide:class',
+      filename: '{{name}}.ts',
+      content: 'export class {{name}} {\n  constructor() {}\n}\n',
+    },
+  ],
 };
