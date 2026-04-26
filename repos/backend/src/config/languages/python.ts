@@ -14,11 +14,17 @@ export const PythonLanguageConfig: ILanguageConfig = {
   },
   fileTemplates: [
     {
-      id: 'class',
-      name: 'Class',
-      icon: 'lucide:class',
-      filename: '{{name}}.py',
-      content: 'class {{name}}:\n  def __init__(self):\n    pass\n',
+      id: 'basic',
+      name: 'Basic',
+      entries: [
+        {
+          id: 'class',
+          name: 'Class',
+          icon: 'lucide:class',
+          filename: '{{name}}.py',
+          content: 'class {{name}}:\n  def __init__(self):\n    pass\n',
+        },
+      ],
     },
   ],
 };

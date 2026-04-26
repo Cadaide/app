@@ -1,6 +1,4 @@
-import { Language } from 'src/types/Language';
-import { PythonLanguageConfig } from './languages/python';
-import { TypeScriptLanguageConfig } from './languages/typescript';
+import { apiAdapter } from ".";
 
 export interface ILanguageFileTemplateFormElement {
   id: string;
@@ -30,9 +28,10 @@ export interface ILanguageConfig {
   fileTemplates: ILanguageFileTemplateGroup[];
 }
 
-export const LanguageConfig: {
-  [key in Language]: ILanguageConfig;
-} = {
-  python: PythonLanguageConfig,
-  typescript: TypeScriptLanguageConfig,
+export const LanguageAPI = {
+  getConfig: async (id: string): Promise<ILanguageConfig | null> => {
+    const response = await apiAdapter.get(`/language/${id}/config`);
+
+    return response.data ?? null;
+  },
 };

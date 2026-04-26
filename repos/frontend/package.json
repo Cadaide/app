@@ -19,6 +19,7 @@
     "@iconify/react": "^6.0.2",
     "@monaco-editor/react": "^4.7.0",
     "axios": "^1.14.0",
+    "change-case": "^5.4.4",
     "matcher": "^6.0.0",
     "monaco-editor": "^0.55.1",
     "monaco-languageclient": "^10.7.0",

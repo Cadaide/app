@@ -4,6 +4,7 @@ import { Expandable } from "../utils/Expandable";
 import { FilesystemFolderEntry } from "@/classes/FilesystemFolderEntry";
 import { useAwait } from "@/hooks/useAwait";
 import { FilesystemFileEntry } from "@/classes/FilesystemFileEntry";
+import { getIcon } from "@/editor/icons";
 import { Icon } from "@iconify/react";
 import { useCallback, useState } from "react";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
@@ -19,6 +20,10 @@ import { FsAPI } from "@/api/fs";
 import { ExplorerContext, useExplorer } from "@/contexts/ExplorerContext";
 import { ContextMenu } from "../base/ContextMenu";
 import { Draggable, DraggableDropArea } from "../base/Draggable";
+import { Select } from "../base/Select";
+import { API } from "@/api";
+import { LoadingScreen } from "../base/LoadingScreen";
+import { FileCreationTemplateForm } from "./FileCreationTemplateForm";
 
 interface IExplorerFolderProps {
   folderEntry: FilesystemFolderEntry;
@@ -60,17 +65,7 @@ export function ExplorerFolder(props: IExplorerFolderProps) {
   );
 
   const { dialog: createEntityDialog, openDialog: openCreateEntityDialog } =
-    useDialog((props) => (
-      <>
-        <DialogHeader title="Create file" onClose={props.closeDialog} />
-        <div>
-          <p>
-            To create a file, please open this project in any other editor that
-            functions properly and create the file there.
-          </p>
-        </div>
-      </>
-    ));
+    useDialog((props) => <ExplorerCreateEntityDialog {...props} />);
 
   const { dialog: createFolderDialog, openDialog: openCreateFolderDialog } =
     useDialog((props) => <ExplorerCreateFolderDialog {...props} />);
@@ -314,11 +309,11 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
 
       let parentEntry: FilesystemFolderEntry;
 
-      if (props.props?.parentPath) {
+      if (props.props?.parentPath)
         parentEntry = (await FilesystemEntry.fromPath(
           props.props.parentPath,
         )) as FilesystemFolderEntry;
-      } else {
+      else {
         const selectedEntry = await FilesystemEntry.fromPath(selectedEntryPath);
 
         if (selectedEntry instanceof FilesystemFileEntry)
@@ -358,18 +353,141 @@ function ExplorerCreateFolderDialog(props: IDialogProps) {
   );
 }
 
+function ExplorerCreateEntityDialog(props: IDialogProps) {
+  const { isLoading, data } = useAwait(
+    () => API.language.getConfig("typescript"),
+    [],
+  );
+
+  const [selectedTemplate, setSelectedTemplate] = useState<string>();
+  const [fileName, setFileName] = useState("");
+
+  const selectedEntryPath = useExplorerState(
+    (state) => state.selectedEntryPath,
+  );
+  const setSelectedEntryPath = useExplorerState(
+    (state) => state.setSelectedEntryPath,
+  );
+
+  const addTab = useTabbarViewState((state) => state.addTab);
+
+  const explorer = useExplorer();
+
+  const onSubmit = useCallback(
+    async (data: FormData) => {
+      if (!selectedEntryPath) return;
+
+      let parentEntry: FilesystemFolderEntry;
+
+      if (props.props?.parentPath)
+        parentEntry = (await FilesystemEntry.fromPath(
+          props.props.parentPath,
+        )) as FilesystemFolderEntry;
+      else {
+        const selectedEntry = await FilesystemEntry.fromPath(selectedEntryPath);
+
+        if (selectedEntry instanceof FilesystemFileEntry)
+          parentEntry = await FilesystemEntry.parent(selectedEntryPath);
+        else parentEntry = selectedEntry as FilesystemFolderEntry;
+      }
+
+      const fileName = data.get("name") as string;
+      const filePath = `${parentEntry.path}/${fileName}`;
+
+      await FsAPI.writeFile(filePath, data.get("content") as string);
+
+      setSelectedEntryPath(filePath);
+      addTab(filePath, getIcon(fileName), fileName);
+
+      props.closeDialog();
+
+      explorer.reload();
+    },
+    [selectedEntryPath, setSelectedEntryPath, explorer, props],
+  );
+
+  if (isLoading || !data) return <LoadingScreen />;
+
+  return (
+    <>
+      <DialogHeader title="Create file" onClose={props.closeDialog} />
+      <Form onSubmit={onSubmit}>
+        <div className="flex flex-col gap-2">
+          <Select
+            onValueChange={setSelectedTemplate}
+            options={data.fileTemplates.flatMap((group) => [
+              {
+                isDivider: true,
+                label: group.name,
+              },
+              ...group.entries.map((entry) => ({
+                id: entry.id,
+                label: entry.name,
+                icon: entry.icon,
+              })),
+            ])}
+            label="Template"
+          />
+          {selectedTemplate && (
+            <FileCreationTemplateForm
+              template={
+                data.fileTemplates
+                  .find((group) =>
+                    group.entries.some(
+                      (entry) => entry.id === selectedTemplate,
+                    ),
+                  )
+                  ?.entries.find((entry) => entry.id === selectedTemplate)!
+              }
+              onFilenameChange={setFileName}
+            />
+          )}
+
+          <Input
+            name="name"
+            placeholder="File name"
+            label="File name"
+            value={fileName}
+            onChange={(e) => setFileName(e.target.value)}
+          />
+
+          <div className="flex flex-row items-center justify-end gap-2">
+            <Button variant="secondary" onClick={props.closeDialog}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Create
+            </Button>
+          </div>
+        </div>
+      </Form>
+    </>
+  );
+}
+
 function ExplorerRemoveDialog(props: IDialogProps) {
   const explorer = useExplorer();
 
+  const tabs = useTabbarViewState((state) => state.tabs);
+  const removeTab = useTabbarViewState((state) => state.removeTab);
+
   const onSubmit = useCallback(async () => {
     const path = props.props?.path as string;
+    const type = props.props?.type as string;
+
     if (!path) throw new Error("No path selected");
 
     await FsAPI.rm(path);
 
+    if (type === "folder")
+      for (const tab of tabs) {
+        if (tab.path.startsWith(path + "/")) removeTab(tab.path);
+      }
+    else removeTab(path);
+
     props.closeDialog();
     explorer.reload();
-  }, [props, explorer]);
+  }, [props, explorer, tabs, removeTab]);
 
   return (
     <>
