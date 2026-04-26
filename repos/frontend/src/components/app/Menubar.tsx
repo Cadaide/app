@@ -12,6 +12,7 @@ import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { API } from "@/api";
 import { Editor } from "@/classes/Editor";
 import { Application } from "@/classes/Application";
+import { useScreenState } from "@/hooks/stores/useScreenState";
 
 type MenuEntry =
   | {
@@ -36,6 +37,8 @@ export function Menubar() {
   const unsetWorkspace = useWorkspaceState((state) => state.unsetWorkspace);
   const closeTabs = useTabbarViewState((state) => state.closeTabs);
   const addTab = useTabbarViewState((state) => state.addTab);
+
+  const setScreen = useScreenState((state) => state.setScreen);
 
   const handleOpenProject = useCallback(async () => {
     const path = await window.api.openSelectDirectoryDialog();
@@ -115,9 +118,17 @@ export function Menubar() {
             onClick: handleCloseProject,
           },
           {
+            type: "divider",
+          },
+          {
             type: "item",
             label: "Settings",
             onClick: handleOpenSettings,
+          },
+          {
+            type: "item",
+            label: "Plugin Manager",
+            onClick: () => setScreen("plugin-manager"),
           },
         ],
       },

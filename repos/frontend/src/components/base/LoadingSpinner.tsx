@@ -2,9 +2,10 @@ import { PiCircleNotch } from "react-icons/pi";
 
 interface ILoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
-export function LoadingSpinner({ size = "md" }: ILoadingSpinnerProps) {
+export function LoadingSpinner({ size = "md", className = "text-ctp-lavender" }: ILoadingSpinnerProps) {
   const sizeClasses = {
     sm: "text-xl",
     md: "text-2xl",
@@ -13,7 +14,7 @@ export function LoadingSpinner({ size = "md" }: ILoadingSpinnerProps) {
 
   return (
     <PiCircleNotch
-      className={`${sizeClasses[size]} text-ctp-lavender animate-spin`}
+      className={`${sizeClasses[size]} ${className} animate-spin`}
     />
   );
 }
