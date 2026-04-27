@@ -5,48 +5,6 @@ import { IPluginIndex, IPluginRuntimeAPIProvider } from 'src/types/Plugin';
 import * as esbuild from 'esbuild';
 import { readFile } from 'fs/promises';
 
-const PLUGIN_RUNTIME_BOOTSTRAP_CODE = `
-globalThis.___cadaide_internal.__listeners = {};
-
-globalThis.___cadaide_internal.on = (event, callback) => {
-  if (!globalThis.___cadaide_internal.__listeners[event]) {
-    globalThis.___cadaide_internal.__listeners[event] = [];
-  }
-
-  globalThis.___cadaide_internal.__listeners[event].push(callback);
-};
-
-globalThis.___cadaide_internal.emit = (event, args) => {
-  const listeners = globalThis.___cadaide_internal.__listeners[event];
-
-  if (!listeners) return;
-  for (const listener of listeners) {
-    listener(...JSON.parse(args));
-  }
-};
-
-globalThis.___cadaide_internal.exec = (data) => {
-  const stringified = JSON.stringify(data);
-  const res = globalThis.___cadaide_internal.execraw(stringified);
-
-  if (!res) return undefined;
-  return JSON.parse(res);
-}
-
-globalThis.cadaide = {
-  notify: (msg) => {
-    ___cadaide_internal.exec({ type: 'api:notify', args: [msg] });
-  },
-  on: (event, callback) => {
-    ___cadaide_internal.on(event, callback);
-  },
-};
-`;
-
-const PLUGIN_RUNTIME_SUFFIX_CODE = `
-globalThis.___cadaide_internal.exec({ type: 'api:initialize', args: [{}] });
-`;
-
 export class PluginRuntime {
   #id: string;
   #rootPath: string;
@@ -121,12 +79,13 @@ export class PluginRuntime {
 
     const code = bundle.outputFiles![0].text;
 
+    const bootstrapCode = await readFile(
+      path.join(process.cwd(), 'res/plugins/bootstrap.js'),
+      'utf-8',
+    ); // TODO: Do this only once, not for each runtime start
+
     const result = vm.evalCode(
-      PLUGIN_RUNTIME_BOOTSTRAP_CODE +
-        '\n' +
-        code +
-        '\n' +
-        PLUGIN_RUNTIME_SUFFIX_CODE,
+      bootstrapCode.replaceAll('// {{cadaide:plugcode}}', code),
     );
     if (result.error) {
       console.error(vm.dump(result.error));

@@ -1,5 +1,6 @@
 import { notify } from "@/hooks/stores/useNotificationState";
 import { WindowSocket } from "./WindowSocket";
+import { IPluginRepoIndexEntry } from "@/api/plugin";
 
 export class Window {
   #socket: WindowSocket;
@@ -10,10 +11,14 @@ export class Window {
     this.#socket.on("api:notify", this.#apiNotify);
   }
 
-  #apiNotify(message: string) {
+  #apiNotify(
+    source: IPluginRepoIndexEntry,
+    type: "info" | "warning" | "error" | "success",
+    message: string,
+  ) {
     notify({
-      type: "info",
-      title: "Plugin",
+      type: type,
+      title: source.name,
       message: message,
       duration: 2000,
     });

@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PluginRuntime } from 'src/classes/PluginRuntime';
 import { PluginService } from '../plugin/plugin.service';
-import { IPluginRuntimeAPIProvider } from 'src/types/Plugin';
+import {
+  IPluginIndex,
+  IPluginRepoIndexEntry,
+  IPluginRuntimeAPIProvider,
+} from 'src/types/Plugin';
 
 @Injectable()
 export class WindowService {
@@ -47,14 +51,19 @@ export class WindowService {
     this.#sessions.delete(session.sessionId);
   }
 
-  async #initializePluginRuntimes(apiProvider: IPluginRuntimeAPIProvider) {
+  async #initializePluginRuntimes(
+    apiProvider: (plugin: IPluginRepoIndexEntry) => IPluginRuntimeAPIProvider,
+  ) {
     const pluginRuntimes: {
       [id: string]: PluginRuntime;
     } = {};
 
     const installedPlugins = await this.pluginService.listInstalled();
     for (const plugin of installedPlugins) {
-      pluginRuntimes[plugin.id] = new PluginRuntime(plugin.id, apiProvider);
+      pluginRuntimes[plugin.id] = new PluginRuntime(
+        plugin.id,
+        apiProvider(plugin),
+      );
 
       await pluginRuntimes[plugin.id].start();
     }
@@ -62,34 +71,42 @@ export class WindowService {
     return pluginRuntimes;
   }
 
-  #constructApiProvider(client: WebSocket): IPluginRuntimeAPIProvider {
-    const callbacks: {
-      [key: string]: ((value: unknown) => void)[];
-    } = {};
+  #constructApiProvider(client: WebSocket) {
+    return (plugin: IPluginRepoIndexEntry): IPluginRuntimeAPIProvider => {
+      const callbacks: {
+        [key: string]: ((value: unknown) => void)[];
+      } = {};
 
-    const apiProvider: IPluginRuntimeAPIProvider = {
-      'api:notify': {
-        fn: (message: string) => {
-          client.send(JSON.stringify({ type: 'api:notify', args: [message] }));
+      const apiProvider: IPluginRuntimeAPIProvider = {
+        'api:notify': {
+          fn: (type: string, message: string) => {
+            client.send(
+              JSON.stringify({
+                type: 'api:notify',
+                source: plugin,
+                args: [type, message],
+              }),
+            );
+          },
         },
-      },
 
-      'api:initialize': {
-        fn: () => {
-          callbacks['api:event:initialize']?.forEach((cb) => cb({}));
+        'api:initialize': {
+          fn: () => {
+            callbacks['api:event:initialize']?.forEach((cb) => cb({}));
+          },
         },
-      },
-      'api:event:initialize': {
-        fn: (callback) => {
-          if (!callbacks['api:event:initialize'])
-            callbacks['api:event:initialize'] = [];
+        'api:event:initialize': {
+          fn: (callback) => {
+            if (!callbacks['api:event:initialize'])
+              callbacks['api:event:initialize'] = [];
 
-          callbacks['api:event:initialize'].push(callback);
+            callbacks['api:event:initialize'].push(callback);
+          },
         },
-      },
+      };
+
+      return apiProvider;
     };
-
-    return apiProvider;
   }
 
   #getSession(client: WebSocket) {

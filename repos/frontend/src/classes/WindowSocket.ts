@@ -1,8 +1,12 @@
+import { IPluginRepoIndexEntry } from "@/api/plugin";
+
 export class WindowSocket {
   #socket: WebSocket;
 
   #listeners: {
-    [key: string]: Array<(...args: any[]) => void>;
+    [key: string]: Array<
+      (source: IPluginRepoIndexEntry, ...args: any[]) => void
+    >;
   } = {};
 
   constructor() {
@@ -13,13 +17,16 @@ export class WindowSocket {
 
       if (this.#listeners[message.type]) {
         this.#listeners[message.type].forEach((listener) =>
-          listener(...message.args),
+          listener(message.source, ...message.args),
         );
       }
     });
   }
 
-  on(eventName: string, callback: (...args: any[]) => void) {
+  on(
+    eventName: string,
+    callback: (source: IPluginRepoIndexEntry, ...args: any[]) => void,
+  ) {
     if (!this.#listeners[eventName]) {
       this.#listeners[eventName] = [];
     }
