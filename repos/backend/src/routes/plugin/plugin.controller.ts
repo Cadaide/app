@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { PluginService } from './plugin.service';
 
 @Controller('/plugin')
@@ -23,5 +23,10 @@ export class PluginController {
   @Post(':id/install')
   async installPlugin(@Param('id') id: string) {
     return this.pluginService.installPlugin(id);
+  }
+
+  @Delete(':id/uninstall')
+  async uninstallPlugin(@Param('id') id: string) {
+    return this.pluginService.removePlugin(id);
   }
 }

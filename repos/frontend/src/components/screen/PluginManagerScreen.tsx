@@ -9,6 +9,7 @@ interface IPluginManagerPluginCard {
   name: string;
   isInstalled: boolean;
   onInstall: () => void;
+  onUninstall: () => void;
 }
 
 export function PluginManagerScreen() {
@@ -19,7 +20,7 @@ export function PluginManagerScreen() {
 
   const installedPluginIds = new Set(installedPlugins?.map(p => p.id) || []);
 
-  const handlePluginInstalled = () => {
+  const handlePluginStateChanged = () => {
     reloadInstalled();
   }
 
@@ -39,7 +40,8 @@ export function PluginManagerScreen() {
                 id={plugin.id}
                 name={plugin.name}
                 isInstalled={true}
-                onInstall={handlePluginInstalled}
+                onInstall={handlePluginStateChanged}
+                onUninstall={handlePluginStateChanged}
               />
             ))}
           </div>
@@ -58,7 +60,8 @@ export function PluginManagerScreen() {
                 id={plugin.id}
                 name={plugin.name}
                 isInstalled={false}
-                onInstall={handlePluginInstalled}
+                onInstall={handlePluginStateChanged}
+                onUninstall={handlePluginStateChanged}
               />
             ))}
           </div>
@@ -83,6 +86,18 @@ function PluginManagerPluginCard(props: IPluginManagerPluginCard) {
     }
   }, [isLoading, props.id, props.isInstalled, props.onInstall]);
 
+  const handleUninstall = useCallback(async () => {
+    if (isLoading || !props.isInstalled) return;
+    setIsLoading(true);
+
+    try {
+      await API.plugin.uninstall(props.id);
+      props.onUninstall();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading, props.id, props.isInstalled, props.onUninstall]);
+
   return (
     <div className="flex items-center justify-between p-4 bg-ctp-surface0 rounded-lg border border-ctp-surface1">
       <div>
@@ -90,7 +105,12 @@ function PluginManagerPluginCard(props: IPluginManagerPluginCard) {
         <p className="text-sm text-ctp-subtext0">{props.id}</p>
       </div>
       {props.isInstalled ? (
-        <span className="px-3 py-1 bg-ctp-surface1 text-ctp-text rounded-md text-sm font-medium">Installed</span>
+        <div className="flex items-center gap-3">
+          <span className="px-3 py-1 bg-ctp-surface1 text-ctp-text rounded-md text-sm font-medium">Installed</span>
+          <Button variant="danger" onClick={handleUninstall} isLoading={isLoading}>
+            Uninstall
+          </Button>
+        </div>
       ) : (
         <Button variant="primary" onClick={handleInstall} isLoading={isLoading}>
           Install
