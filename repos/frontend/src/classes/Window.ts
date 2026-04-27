@@ -1,3 +1,4 @@
+import { notify } from "@/hooks/stores/useNotificationState";
 import { WindowSocket } from "./WindowSocket";
 
 export class Window {
@@ -10,6 +11,11 @@ export class Window {
   }
 
   #apiNotify(message: string) {
-    alert(message);
+    notify({
+      type: "info",
+      title: "Plugin",
+      message: message,
+      duration: 2000,
+    });
   }
 }

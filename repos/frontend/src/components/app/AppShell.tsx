@@ -14,6 +14,7 @@ import { TerminalView } from "../views/TerminalView";
 import { useState } from "react";
 import { PluginManagerScreen } from "../screen/PluginManagerScreen";
 import { useScreenState } from "@/hooks/stores/useScreenState";
+import { NotificationContainer } from "../base/Notification";
 
 const CodeEditor = dynamic(
   async () => (await import("../editor/CodeEditor")).CodeEditor,
@@ -59,6 +60,7 @@ export function AppShell() {
       <Bottombar />
 
       <BrowserPlatformCompat />
+      <NotificationContainer />
 
       <div
         id="ghost-container"
