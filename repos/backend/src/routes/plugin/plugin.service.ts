@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
 import { existsSync } from 'fs';
-import { mkdir, readdir, rmdir, writeFile } from 'fs/promises';
+import { cp, mkdir, readdir, readFile, rmdir, writeFile } from 'fs/promises';
 import JSZip from 'jszip';
 import path from 'path';
 import { CFG_PATH_PLUGINS_DIR } from 'src/config/paths';
@@ -104,6 +104,23 @@ export class PluginService implements OnModuleInit {
         await writeFile(targetPath, content);
       }
     }
+  }
+
+  async installFromFolder(folderPath: string) {
+    // Read plugin index
+    const pluginJson = JSON.parse(
+      await readFile(path.join(folderPath, 'plugindex.json'), 'utf-8'),
+    ) as IPluginIndex;
+
+    // Create plugin folder
+    await mkdir(path.join(CFG_PATH_PLUGINS_DIR, pluginJson.id), {
+      recursive: true,
+    });
+
+    // Copy all files
+    await cp(folderPath, path.join(CFG_PATH_PLUGINS_DIR, pluginJson.id), {
+      recursive: true,
+    });
   }
 
   async removePlugin(id: string) {

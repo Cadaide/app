@@ -41,4 +41,8 @@ export class Application {
       window.api.platform === "native"
     );
   }
+
+  static get isDevelopmentModeEnabled() {
+    return process.env.NODE_ENV == "development";
+  }
 }

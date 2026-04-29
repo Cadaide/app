@@ -142,6 +142,7 @@ export function Menubar() {
           },
         ],
       },
+      // TODO: Show only in DEV mode
       {
         label: "DEV",
         entries: [

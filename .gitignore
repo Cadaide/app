@@ -1,4 +1,4 @@
 release/
 *.DS_Store
 .DirIcon
-./plugins/
+plugins/

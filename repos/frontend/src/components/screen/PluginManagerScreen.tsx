@@ -3,6 +3,9 @@ import { useAwait } from "@/hooks/useAwait";
 import { LoadingScreen } from "../base/LoadingScreen";
 import { Button } from "../base/Button";
 import { useCallback, useState } from "react";
+import { PiFolder, PiFolderOpen, PiPlus } from "react-icons/pi";
+import { Application } from "@/classes/Application";
+import { notify } from "@/hooks/stores/useNotificationState";
 
 interface IPluginManagerPluginCard {
   id: string;
@@ -13,30 +16,69 @@ interface IPluginManagerPluginCard {
 }
 
 export function PluginManagerScreen() {
-  const { isLoading: isLoadingList, data: availablePlugins } = useAwait(() => API.plugin.list(), []);
-  const { isLoading: isLoadingInstalled, data: installedPlugins, reload: reloadInstalled } = useAwait(() => API.plugin.installed(), []);
+  const { isLoading: isLoadingList, data: availablePlugins } = useAwait(
+    () => API.plugin.list(),
+    [],
+  );
+  const {
+    isLoading: isLoadingInstalled,
+    data: installedPlugins,
+    reload: reloadInstalled,
+  } = useAwait(() => API.plugin.installed(), []);
+
+  const importPluginFromFolder = useCallback(async () => {
+    const path = await window.api.openSelectDirectoryDialog();
+    if (!path) return;
+
+    await API.plugin.installFromFolder(path);
+
+    notify({
+      type: "success",
+      title: "Plugin installed",
+      message: `Plugin ${path.split("/").pop()} installed successfully.`,
+      duration: 5000,
+    });
+
+    reloadInstalled();
+  }, [reloadInstalled]);
 
   if (isLoadingList || isLoadingInstalled) return <LoadingScreen />;
 
-  const installedPluginIds = new Set(installedPlugins?.map(p => p.id) || []);
+  const installedPluginIds = new Set(installedPlugins?.map((p) => p.id) || []);
 
   const handlePluginStateChanged = () => {
     reloadInstalled();
-  }
+  };
 
   return (
     <div className="h-full flex flex-col grow bg-ctp-base text-ctp-text p-16 overflow-y-auto">
-      <p className="text-2xl font-semibold mb-6">Plugin Manager</p>
+      <div className="w-full flex flex-row justify-between">
+        <p className="text-2xl font-semibold mb-6">Plugin Manager</p>
+        {Application.isDevelopmentModeEnabled && (
+          <div>
+            <Button
+              variant="secondary"
+              size="md"
+              iconLeft={<PiFolderOpen size={20} />}
+              onClick={importPluginFromFolder}
+            >
+              Import folder (DEV)
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="mb-8">
-        <h2 className="text-xl font-medium mb-4 text-ctp-lavender">Installed Plugins</h2>
+        <h2 className="text-xl font-medium mb-4 text-ctp-lavender">
+          Installed Plugins
+        </h2>
         {installedPlugins?.length === 0 ? (
           <p className="text-ctp-subtext0">No plugins installed.</p>
         ) : (
           <div className="flex flex-col gap-4 w-full max-w-2xl">
             {installedPlugins?.map((plugin) => (
-              <PluginManagerPluginCard 
-                key={plugin.id} 
+              <PluginManagerPluginCard
+                key={plugin.id}
                 id={plugin.id}
                 name={plugin.name}
                 isInstalled={true}
@@ -49,21 +91,25 @@ export function PluginManagerScreen() {
       </div>
 
       <div>
-        <h2 className="text-xl font-medium mb-4 text-ctp-lavender">Available Plugins</h2>
+        <h2 className="text-xl font-medium mb-4 text-ctp-lavender">
+          Available Plugins
+        </h2>
         {availablePlugins?.length === 0 ? (
           <p className="text-ctp-subtext0">No available plugins found.</p>
         ) : (
           <div className="flex flex-col gap-4 w-full max-w-2xl">
-            {availablePlugins?.filter(p => !installedPluginIds.has(p.id)).map((plugin) => (
-              <PluginManagerPluginCard 
-                key={plugin.id} 
-                id={plugin.id}
-                name={plugin.name}
-                isInstalled={false}
-                onInstall={handlePluginStateChanged}
-                onUninstall={handlePluginStateChanged}
-              />
-            ))}
+            {availablePlugins
+              ?.filter((p) => !installedPluginIds.has(p.id))
+              .map((plugin) => (
+                <PluginManagerPluginCard
+                  key={plugin.id}
+                  id={plugin.id}
+                  name={plugin.name}
+                  isInstalled={false}
+                  onInstall={handlePluginStateChanged}
+                  onUninstall={handlePluginStateChanged}
+                />
+              ))}
           </div>
         )}
       </div>
@@ -106,8 +152,14 @@ function PluginManagerPluginCard(props: IPluginManagerPluginCard) {
       </div>
       {props.isInstalled ? (
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 bg-ctp-surface1 text-ctp-text rounded-md text-sm font-medium">Installed</span>
-          <Button variant="danger" onClick={handleUninstall} isLoading={isLoading}>
+          <span className="px-3 py-1 bg-ctp-surface1 text-ctp-text rounded-md text-sm font-medium">
+            Installed
+          </span>
+          <Button
+            variant="danger"
+            onClick={handleUninstall}
+            isLoading={isLoading}
+          >
             Uninstall
           </Button>
         </div>

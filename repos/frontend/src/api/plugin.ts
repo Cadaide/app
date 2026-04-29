@@ -35,6 +35,11 @@ export const PluginAPI = {
   install: async (id: string) => {
     await apiAdapter.post<void>(`/plugin/${id}/install`);
   },
+  installFromFolder: async (path: string) => {
+    await apiAdapter.post<void>(
+      `/plugin/install/folder?path=${encodeURIComponent(path)}`,
+    );
+  },
   uninstall: async (id: string) => {
     await apiAdapter.delete<void>(`/plugin/${id}/uninstall`);
   },
