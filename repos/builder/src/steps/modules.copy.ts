@@ -11,6 +11,7 @@ const CopyMap = {
 
   "../backend/package.json": "backend/",
   "../backend/dist": "backend/",
+  "../backend/res": "backend/res/",
 
   "../microservices/fs/go.mod": "microservices/fs/",
   [`../microservices/fs/build/fs${BuildConfig.platform == Platform.Windows ? ".exe" : ""}`]:
