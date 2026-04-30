@@ -14,7 +14,10 @@ export class LspGateway implements OnGatewayConnection {
   constructor(private readonly lspService: LspService) {}
 
   async handleConnection(client: WebSocket, req: IncomingMessage) {
-    const url = new URL(req.url!, `http://localhost:3001`);
+    const url = new URL(
+      req.url!,
+      `http://localhost:${process.env.PORT || 3001}`,
+    );
     const language = url.searchParams.get('language') as Language;
 
     if (!language) {

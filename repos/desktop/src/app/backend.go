@@ -3,15 +3,20 @@ package app
 import (
 	"cadaide/src/binaries"
 	"cadaide/src/shell"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
-func RunBackendInDevMode() (*exec.Cmd, error) {
+func RunBackendInDevMode(port int) (*exec.Cmd, error) {
 	cwd, _ := os.Getwd()
+
+	log.Printf("Starting backend in dev mode on port %d...\n", port)
 
 	cmd, err := shell.RunHidden(shell.RunOptions{
 		Command: []string{"bun", "run", "start:dev"},
@@ -19,6 +24,7 @@ func RunBackendInDevMode() (*exec.Cmd, error) {
 		Env: map[string]string{
 			"NODE_ENV":       "development",
 			"FS_BINARY_PATH": filepath.Join(cwd, "../microservices/fs/build/fs"),
+			"PORT":           strconv.Itoa(port),
 		},
 	})
 	if err != nil {
@@ -28,11 +34,12 @@ func RunBackendInDevMode() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
-func RunBackend() (*exec.Cmd, error) {
+func RunBackend(port int) (*exec.Cmd, error) {
 	cwd, _ := os.Getwd()
 
-	bunBinary := binaries.GetBunBinaryPath()
+	log.Printf("Starting backend in production mode on port %d...\n", port)
 
+	bunBinary := binaries.GetBunBinaryPath()
 	fsBinary := binaries.GetFSBinaryPath()
 
 	cmd, err := shell.RunHidden(shell.RunOptions{
@@ -42,6 +49,7 @@ func RunBackend() (*exec.Cmd, error) {
 			"NODE_ENV":        "production",
 			"FS_BINARY_PATH":  fsBinary,
 			"BUN_BINARY_PATH": bunBinary,
+			"PORT":            strconv.Itoa(port),
 		},
 	})
 	if err != nil {
@@ -51,9 +59,9 @@ func RunBackend() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
-func WaitForBackend() {
+func WaitForBackend(port int) {
 	for {
-		resp, err := http.Get("http://localhost:3001/health")
+		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/health", port))
 		if err != nil {
 			time.Sleep(100 * time.Millisecond)
 			continue

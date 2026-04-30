@@ -13,7 +13,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(3001);
+  await app.listen(process.env.PORT || 3001);
 
   /*const socketPath =
     process.env.SOCKET_PATH || path.join(process.cwd(), 'backend.sock');

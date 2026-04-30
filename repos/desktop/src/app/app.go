@@ -1,22 +1,27 @@
 package app
 
 import (
+	"cadaide/src/net"
 	"cadaide/src/shell"
 	"cadaide/src/window"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
 func RunInDevMode() {
-	frontendCmd, err := RunFrontendInDevMode()
+	frontendPort := net.GetRandomAvailablePort()
+	backendPort := net.GetRandomAvailablePort()
+
+	frontendCmd, err := RunFrontendInDevMode(frontendPort, backendPort)
 	if err != nil {
 		panic(err)
 	}
 
 	defer shell.KillGroup(frontendCmd)
 
-	backendCmd, err := RunBackendInDevMode()
+	backendCmd, err := RunBackendInDevMode(backendPort)
 	if err != nil {
 		panic(err)
 	}
@@ -32,8 +37,8 @@ func RunInDevMode() {
 		os.Exit(0)
 	}()
 
-	WaitForBackend()
-	WaitForFrontend()
+	WaitForBackend(backendPort)
+	WaitForFrontend(frontendPort)
 
 	w := window.New(window.WindowConfig{
 		Title:          "Cadaide (DEV MODE)",
@@ -44,18 +49,21 @@ func RunInDevMode() {
 
 	defer w.Destroy()
 
-	w.Open("http://localhost:3000")
+	w.Open(fmt.Sprintf("http://localhost:%d", frontendPort))
 }
 
 func Run() {
-	frontendCmd, err := RunFrontend()
+	frontendPort := net.GetRandomAvailablePort()
+	backendPort := net.GetRandomAvailablePort()
+
+	frontendCmd, err := RunFrontend(frontendPort, backendPort)
 	if err != nil {
 		panic(err)
 	}
 
 	defer shell.KillGroup(frontendCmd)
 
-	backendCmd, err := RunBackend()
+	backendCmd, err := RunBackend(backendPort)
 	if err != nil {
 		panic(err)
 	}
@@ -71,8 +79,8 @@ func Run() {
 		os.Exit(0)
 	}()
 
-	WaitForBackend()
-	WaitForFrontend()
+	WaitForBackend(backendPort)
+	WaitForFrontend(frontendPort)
 
 	w := window.New(window.WindowConfig{
 		Title:          "Cadaide",
@@ -83,5 +91,5 @@ func Run() {
 
 	defer w.Destroy()
 
-	w.Open("http://127.0.0.1:3000")
+	w.Open(fmt.Sprintf("http://127.0.0.1:%d", frontendPort))
 }

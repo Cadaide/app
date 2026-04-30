@@ -39,7 +39,7 @@ export class WindowService {
 
   async disposeSession(client: WebSocket) {
     const session = this.#getSession(client);
-    if (!session) throw new Error('Session not found');
+    if (!session) return;
 
     this.#logger.log(`Dispose session: ${session.sessionId}`);
 

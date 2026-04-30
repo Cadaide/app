@@ -4,6 +4,7 @@ import { Workspace } from "./Workspace";
 import * as monaco from "monaco-editor";
 import { getLspLanguage } from "@/editor/languages";
 import { pathToName } from "@/utils/files/file";
+import { ApplicationConfig } from "./ApplicationConfig";
 
 const lsps = {
   python: {
@@ -39,7 +40,7 @@ export class LspManager {
     const projectPath = this.#workspace.path.replaceAll("\\", "/");
 
     const client = new LspClient({
-      wsUrl: `ws://localhost:3001/lsp?language=${languageId}`,
+      wsUrl: `ws://localhost:${ApplicationConfig.backendPort}/lsp?language=${languageId}`,
       monaco: this.#monaco,
       languageIds: [languageId],
       rootUri: this.#monaco.Uri.file(projectPath).toString(),
@@ -85,11 +86,19 @@ export class LspManager {
     client.sendDidClose(model.uri.toString());
   }
 
-  notifyFileRename(oldPath: string, newPath: string, isFolder: boolean = false) {
+  notifyFileRename(
+    oldPath: string,
+    newPath: string,
+    isFolder: boolean = false,
+  ) {
     if (!this.#monaco) return;
 
-    let oldUri = this.#monaco.Uri.file(oldPath.replaceAll("\\", "/")).toString();
-    let newUri = this.#monaco.Uri.file(newPath.replaceAll("\\", "/")).toString();
+    let oldUri = this.#monaco.Uri.file(
+      oldPath.replaceAll("\\", "/"),
+    ).toString();
+    let newUri = this.#monaco.Uri.file(
+      newPath.replaceAll("\\", "/"),
+    ).toString();
 
     if (isFolder) {
       if (!oldUri.endsWith("/")) oldUri += "/";

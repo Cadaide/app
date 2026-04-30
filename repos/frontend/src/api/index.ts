@@ -4,9 +4,10 @@ import { ConfigAPI } from "./config";
 import { LanguageAPI } from "./language";
 import { ProjectAPI } from "./project";
 import { PluginAPI } from "./plugin";
+import { ApplicationConfig } from "@/classes/ApplicationConfig";
 
 export const apiAdapter = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: `http://localhost:${ApplicationConfig.backendPort}`,
   headers: {
     "Content-Type": "application/json",
   },

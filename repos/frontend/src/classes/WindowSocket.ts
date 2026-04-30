@@ -1,4 +1,5 @@
 import { IPluginRepoIndexEntry } from "@/api/plugin";
+import { ApplicationConfig } from "./ApplicationConfig";
 
 export class WindowSocket {
   #socket: WebSocket;
@@ -10,7 +11,9 @@ export class WindowSocket {
   } = {};
 
   constructor() {
-    this.#socket = new WebSocket("ws://localhost:3001/window/ws");
+    this.#socket = new WebSocket(
+      `ws://localhost:${ApplicationConfig.backendPort}/window/ws`,
+    );
 
     this.#socket.addEventListener("message", (e) => {
       const message = JSON.parse(e.data);
