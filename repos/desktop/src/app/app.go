@@ -3,6 +3,9 @@ package app
 import (
 	"cadaide/src/shell"
 	"cadaide/src/window"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func RunInDevMode() {
@@ -19,6 +22,15 @@ func RunInDevMode() {
 	}
 
 	defer shell.KillGroup(backendCmd)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		shell.KillGroup(frontendCmd)
+		shell.KillGroup(backendCmd)
+		os.Exit(0)
+	}()
 
 	WaitForBackend()
 	WaitForFrontend()
@@ -49,6 +61,15 @@ func Run() {
 	}
 
 	defer shell.KillGroup(backendCmd)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		shell.KillGroup(frontendCmd)
+		shell.KillGroup(backendCmd)
+		os.Exit(0)
+	}()
 
 	WaitForBackend()
 	WaitForFrontend()
