@@ -46,6 +46,9 @@ export class ReleaseCopy extends BuildStep {
       case Platform.Linux:
         await this.#copyLinux().catch((e) => Promise.reject(e));
         break;
+      case Platform.Windows:
+        await this.#copyWindows().catch((e) => Promise.reject(e));
+        break;
       default:
         break;
     }
@@ -54,6 +57,11 @@ export class ReleaseCopy extends BuildStep {
   async #copyLinux() {
     await this.#copyPkgZip().catch((e) => Promise.reject(e));
     await this.#createAppimage().catch((e) => Promise.reject(e));
+  }
+
+  async #copyWindows() {
+    await this.#copyPkgZip().catch((e) => Promise.reject(e));
+    await this.#copyPortableExe().catch((e) => Promise.reject(e));
   }
 
   async #createAppimage() {
@@ -130,6 +138,19 @@ export class ReleaseCopy extends BuildStep {
     )
       .await()
       .catch((e) => Promise.reject(e));
+  }
+
+  async #copyPortableExe() {
+    this.logger.info("Copying portable exe...");
+
+    const src = path.join(this.#buildDir, "dist/cadaide.exe");
+
+    const dest = path.join(
+      this.#releaseDir,
+      `cadaide_${BuildConfig.version}_${BuildConfig.platform}_portable.exe`,
+    );
+
+    await cp(src, dest).catch((e) => Promise.reject(e));
   }
 
   async #copyPkgZip() {
