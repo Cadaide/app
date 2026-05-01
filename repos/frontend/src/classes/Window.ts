@@ -1,38 +1,64 @@
 import { notify } from "@/hooks/stores/useNotificationState";
-import { WindowSocket } from "./WindowSocket";
 import { IPluginRepoIndexEntry } from "@/api/plugin";
+import { Workspace } from "./Workspace";
 
 export class Window {
-  #socket: WindowSocket;
+  #workspace: Workspace;
 
-  constructor() {
-    this.#socket = new WindowSocket();
-
-    this.#socket.on("api:notify", this.#apiNotify);
+  constructor(workspace: Workspace) {
+    this.#workspace = workspace;
   }
 
-  once<T>(
-    event: string,
-    callback: (source: IPluginRepoIndexEntry, args: T) => void,
-    pluginId?: string,
-  ) {
-    this.#socket.once(event, callback, pluginId);
-  }
+  init() {
+    this.#workspace.pluginHost.provideCallHandler(
+      "window",
+      "showNotification",
+      (source: string, _data: unknown) => {
+        const data = _data as { type: string; message: string };
 
-  emit(event: string, args: unknown[], pluginId?: string) {
-    this.#socket.emit(event, args, pluginId);
-  }
+        if (!["info", "warning", "error", "success"].includes(data.type)) {
+          notify({
+            type: "error",
+            title: source,
+            message: `Invalid notification type: ${data.type}`,
+            duration: 2000,
+          });
 
-  #apiNotify(
-    source: IPluginRepoIndexEntry,
-    type: "info" | "warning" | "error" | "success",
-    message: string,
-  ) {
-    notify({
-      type: type,
-      title: source.name,
-      message: message,
-      duration: 2000,
-    });
+          return;
+        }
+
+        if (typeof data.message !== "string") {
+          notify({
+            type: "error",
+            title: source,
+            message: "Invalid notification message",
+            duration: 2000,
+          });
+
+          return;
+        }
+
+        notify({
+          type: data.type as "info" | "warning" | "error" | "success",
+          title: source,
+          message: data.message,
+          duration: 2000,
+        });
+      },
+    );
+
+    this.#workspace.pluginHost.provideCallHandler(
+      "http",
+      "get",
+      async (source: string, _data: unknown) => {
+        const data = _data as { url: string; headers?: Record<string, string> };
+
+        const response = await fetch(data.url, {
+          headers: data.headers,
+        });
+
+        return await response.text();
+      },
+    );
   }
 }

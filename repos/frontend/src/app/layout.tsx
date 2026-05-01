@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   title: "Cadaide",
 };
 
+console.log("[Frontend] PORT: " + process.env.PORT);
+
 export default function RootLayout({
   children,
 }: Readonly<{

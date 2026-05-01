@@ -1,15 +1,24 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { existsSync } from 'fs';
 import { cp, mkdir, readdir, readFile, rmdir, writeFile } from 'fs/promises';
 import JSZip from 'jszip';
 import path from 'path';
+import { PluginHost } from 'src/classes/plugin/PluginHost';
 import { CFG_PATH_PLUGINS_DIR } from 'src/config/paths';
 import { PLUGIN_REPOINDEX_URL } from 'src/config/plugins';
 import { IPluginIndex, IPluginRepoIndex } from 'src/types/Plugin';
 
 @Injectable()
 export class PluginService implements OnModuleInit {
+  #hostSessions: {
+    [key: string]: {
+      ws: WebSocket;
+      pluginHost: PluginHost;
+    };
+  } = {};
+
   async onModuleInit() {
     if (existsSync(CFG_PATH_PLUGINS_DIR)) return;
 
@@ -129,5 +138,89 @@ export class PluginService implements OnModuleInit {
     const pluginPath = path.join(CFG_PATH_PLUGINS_DIR, plugin.id);
 
     await rmdir(pluginPath, { recursive: true });
+  }
+
+  async createHostSession(client: WebSocket) {
+    const sessionId = randomUUID();
+
+    const pluginHost = new PluginHost();
+
+    this.#hostSessions[sessionId] = {
+      ws: client,
+      pluginHost: pluginHost,
+    };
+
+    const installedPlugins = await this.listInstalled();
+
+    for (const plugin of installedPlugins) {
+      await pluginHost.loadPlugin(plugin.id);
+    }
+
+    pluginHost.addListener(
+      (pluginId, type, namespace, command, data, responseId) => {
+        const payload = JSON.stringify({
+          event: type == 'execute' ? 'call' : type,
+          data: {
+            pluginId,
+            namespace,
+            command,
+            responseId,
+            data,
+          },
+        });
+
+        client.send(payload);
+      },
+    );
+
+    await pluginHost.start();
+  }
+
+  async disposeHostSession(client: WebSocket) {
+    const session = this.#findSessionBySocket(client);
+    if (!session) return;
+
+    session.pluginHost.dispose();
+
+    delete this.#hostSessions[session.sessionId];
+  }
+
+  async handleHostCall(client: WebSocket, payload: any) {
+    const session = this.#findSessionBySocket(client);
+    if (!session) return;
+
+    session.pluginHost.call(
+      payload.pluginId,
+      payload.namespace,
+      payload.command,
+      payload.data,
+      payload.responseId,
+    );
+  }
+
+  async handleHostCallResponse(client: WebSocket, payload: any) {
+    const session = this.#findSessionBySocket(client);
+    if (!session) return;
+
+    session.pluginHost.emitCallResponse(
+      payload.pluginId,
+      payload.namespace,
+      payload.command,
+      payload.data,
+      payload.responseId,
+    );
+  }
+
+  #findSessionBySocket(client: WebSocket) {
+    const session = Object.entries(this.#hostSessions).find(
+      ([_, session]) => session.ws === client,
+    );
+
+    if (!session) return null;
+
+    return {
+      sessionId: session[0],
+      ...session[1],
+    };
   }
 }

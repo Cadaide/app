@@ -11,7 +11,7 @@ import { HomeScreen } from "../screen/HomeScreen";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { BrowserPlatformCompat } from "@/platform/browser/compat/_compat";
 import { TerminalView } from "../views/TerminalView";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PluginManagerScreen } from "../screen/PluginManagerScreen";
 import { useScreenState } from "@/hooks/stores/useScreenState";
 import { NotificationContainer } from "../base/Notification";
@@ -29,6 +29,10 @@ export function AppShell() {
   const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
 
   const screen = useScreenState((state) => state.screen);
+
+  useEffect(() => {
+    if (workspace) workspace.init();
+  }, [workspace]);
 
   return (
     <div className="w-screen h-screen min-w-screen max-w-screen min-h-screen max-h-screen flex flex-col overflow-hidden">

@@ -1,21 +1,37 @@
-import path from "path";
 import { Filesystem } from "./Filesystem";
 import { basename } from "@/utils/files/path";
 import { API } from "@/api";
 import { Window } from "./Window";
-import { IPluginIndex, IPluginRepoIndexEntry } from "@/api/plugin";
+import { PluginHost } from "./PluginHost";
 
 export class Workspace {
   #path: string;
 
   #filesystem: Filesystem;
   #window: Window;
+  #pluginHost: PluginHost;
+
+  #isInitialized: boolean = false;
+
+  get pluginHost() {
+    return this.#pluginHost;
+  }
 
   constructor(path: string) {
     this.#path = path;
 
     this.#filesystem = new Filesystem(path);
-    this.#window = new Window();
+    this.#pluginHost = new PluginHost();
+    this.#window = new Window(this);
+  }
+
+  async init() {
+    if (this.#isInitialized) return;
+    this.#isInitialized = true;
+
+    this.#window.init();
+
+    this.#pluginHost.call("@all", "events", "initialize", {});
   }
 
   get name(): string {
@@ -35,26 +51,4 @@ export class Workspace {
 
     return data.language;
   }
-
-  public plugins = {
-    awaitCall: async <T>(
-      name: string,
-      args: unknown[] = [],
-      pluginId?: string,
-    ): Promise<T> => {
-      return new Promise<T>((resolve, reject) => {
-        const timeout = setTimeout(
-          () => reject(new Error("Request timed out")),
-          10000,
-        );
-
-        this.#window.once(name, (_source: IPluginRepoIndexEntry, res: T) => {
-          clearTimeout(timeout);
-          resolve(res);
-        }, pluginId);
-
-        this.#window.emit(name, args, pluginId);
-      });
-    },
-  };
 }

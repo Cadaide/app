@@ -2,6 +2,10 @@
   "name": "@cadaide/plugin",
   "module": "src/index.ts",
   "type": "module",
+  "exports": {
+    "import": "./src/index.ts",
+    "types": "./src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
