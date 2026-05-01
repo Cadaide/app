@@ -99,6 +99,57 @@ export class PluginRuntime {
     if (this.#runtime?.alive) this.#runtime.dispose();
   }
 
+  /**
+   * Call a named async function on the plugin's API provider (inside the VM).
+   * Returns undefined if the plugin has no provider for the given name.
+   */
+  async awaitCall<T>(
+    name: string,
+    args: unknown[] = [],
+  ): Promise<T | undefined> {
+    const vm = this.#vm;
+    const runtime = this.#runtime;
+    if (!vm?.alive || !runtime?.alive) return undefined;
+
+    // Strip the 'api:' prefix so bootstrap sees e.g. 'packageManager.listInstalled'
+    const callName = name.startsWith('api:') ? name.slice('api:'.length) : name;
+    const argsJson = JSON.stringify(args);
+
+    const evalResult = vm.evalCode(
+      `(async () => globalThis.___cadaide_internal.awaitCall(${JSON.stringify(callName)}, ${argsJson}))()`,
+    );
+
+    if (evalResult.error) {
+      const err = vm.dump(evalResult.error);
+      evalResult.dispose();
+
+      throw new Error(typeof err === 'string' ? err : JSON.stringify(err));
+    }
+
+    // promiseHandle IS evalResult.value — keep only one reference, dispose once.
+    const promiseHandle = evalResult.value;
+
+    // Start tracking settlement, then pump the QuickJS job queue so the
+    // async provider method runs and the inner promise resolves.
+    const settlementPromise = vm.resolvePromise(promiseHandle);
+    runtime.executePendingJobs();
+
+    const settled = await settlementPromise;
+    promiseHandle.dispose(); // single dispose — do NOT also call evalResult.dispose()
+
+    if (settled.error) {
+      const err = vm.dump(settled.error);
+      settled.dispose();
+
+      throw new Error(typeof err === 'string' ? err : JSON.stringify(err));
+    }
+
+    const value = vm.dump(settled.value) as T;
+    settled.dispose();
+
+    return value;
+  }
+
   #execApiProvider(data: string): string {
     const parsedData = JSON.parse(data) as {
       type: string;

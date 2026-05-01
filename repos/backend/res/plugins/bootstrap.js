@@ -1,3 +1,5 @@
+const ___cadaide_internal_memory = {};
+
 function ___cadaide_internal_bootstrap() {
   ___cadaide_internal_setupEnvironment();
   ___cadaide_internal_evalPlugin();
@@ -52,6 +54,21 @@ function ___cadaide_internal_setupEnvironment() {
     return JSON.parse(res);
   };
 
+  cadaideInt.awaitCall = async (name, args) => {
+    const parts = name.split('.');
+
+    if (parts[0] == 'packageManager') {
+      const provider = ___cadaide_internal_memory['api.packageProvider'];
+      if (!provider) return undefined;
+
+      if (parts[1] === 'listInstalled') {
+        return await provider.listInstalledPackages();
+      }
+    }
+
+    return undefined;
+  };
+
   const cadaide = {
     notifications: {
       info: (msg) => ___cadaide_fn_notifications_send('info', msg),
@@ -59,6 +76,12 @@ function ___cadaide_internal_setupEnvironment() {
       error: (msg) => ___cadaide_fn_notifications_send('error', msg),
       success: (msg) => ___cadaide_fn_notifications_send('success', msg),
     },
+
+    packageManager: {
+      setProvider: (provider) =>
+        (___cadaide_internal_memory['api.packageProvider'] = provider),
+    },
+
     on: ___cadaide_internal.on,
   };
 

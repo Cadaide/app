@@ -3,7 +3,6 @@ import { randomUUID } from 'crypto';
 import { PluginRuntime } from 'src/classes/PluginRuntime';
 import { PluginService } from '../plugin/plugin.service';
 import {
-  IPluginIndex,
   IPluginRepoIndexEntry,
   IPluginRuntimeAPIProvider,
 } from 'src/types/Plugin';
@@ -103,10 +102,66 @@ export class WindowService {
             callbacks['api:event:initialize'].push(callback);
           },
         },
+
+        'api:event:packageManager.listInstalled': {
+          fn: (callback) => {
+            if (!callbacks['api:event:packageManager.listInstalled'])
+              callbacks['api:event:packageManager.listInstalled'] = [];
+
+            callbacks['api:event:packageManager.listInstalled'].push(callback);
+          },
+        },
       };
 
       return apiProvider;
     };
+  }
+
+  /**
+   * Call a named function on plugin runtimes in this session.
+   * - If `pluginId` is given, only that plugin's runtime is called.
+   * - Otherwise all runtimes are raced; the first defined result wins.
+   */
+  async awaitPluginCall<T>(
+    client: WebSocket,
+    name: string,
+    args: unknown[] = [],
+    pluginId?: string,
+  ): Promise<T | undefined> {
+    const session = this.#getSession(client);
+    if (!session) return undefined;
+
+    const allRuntimes = session.session.pluginRuntimes;
+
+    // Target a specific plugin when pluginId is provided
+    if (pluginId) return allRuntimes[pluginId]?.awaitCall<T>(name, args);
+
+    const runtimes = Object.values(allRuntimes);
+    if (runtimes.length === 0) return undefined;
+
+    // Race: first plugin that returns a defined value wins
+    return new Promise<T | undefined>((resolve) => {
+      let settled = false;
+      let pending = runtimes.length;
+
+      for (const runtime of runtimes) {
+        runtime
+          .awaitCall<T>(name, args)
+          .then((result) => {
+            pending--;
+
+            if (!settled && result !== undefined) {
+              settled = true;
+              resolve(result);
+            } else if (pending === 0 && !settled) resolve(undefined);
+          })
+          .catch(() => {
+            pending--;
+
+            if (pending === 0 && !settled) resolve(undefined);
+          });
+      }
+    });
   }
 
   #getSession(client: WebSocket) {

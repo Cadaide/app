@@ -9,6 +9,7 @@ import {
   PiMagnifyingGlass,
 } from "react-icons/pi";
 import { ExplorerView } from "../ExplorerView";
+import { PackageManagerView } from "../PackageManagerView";
 
 interface ISidebarTabConfigItem {
   id: string;
@@ -40,7 +41,7 @@ export const SidebarTabsConfig: ISidebarTabConfigItem[] = [
     id: "packages",
     icon: PiBooks,
     title: "Packages",
-    view: <p>TODO</p>,
+    view: <PackageManagerView />,
   },
   {
     id: "debug",
