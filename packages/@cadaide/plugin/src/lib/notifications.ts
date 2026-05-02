@@ -1,8 +1,6 @@
 import { HostBridge } from "../host/bridge";
 
 const showNotification = (type: string, msg: string) => {
-  ___cadaide_debug_log(msg);
-
   HostBridge.execute("window", "showNotification", {
     type,
     message: msg,

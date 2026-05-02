@@ -84,6 +84,10 @@ export class Editor {
     this.#notifyIfInitialized();
   }
 
+  markEditorUnmounted() {
+    this.#editorMounted = false;
+  }
+
   #notifyIfInitialized() {
     if (this.#editorMounted) {
       this.#initializedListeners.forEach((listener) => {

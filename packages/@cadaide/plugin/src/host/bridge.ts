@@ -89,7 +89,7 @@ export class HostBridge {
     command: string,
     handler: (data: unknown) => unknown,
   ) {
-    this.#onMessage((msg) => {
+    this.#onMessage(async (msg) => {
       const data = JSON.parse(msg);
 
       if (
@@ -100,7 +100,7 @@ export class HostBridge {
         return;
       }
 
-      const result = handler(data.data.data);
+      const result = await handler(data.data.data);
 
       if (data.data.responseId) {
         this.#post(

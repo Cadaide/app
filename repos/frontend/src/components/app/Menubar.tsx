@@ -11,8 +11,7 @@ import { Workspace } from "@/classes/Workspace";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { API } from "@/api";
 import { Editor } from "@/classes/Editor";
-import { Application } from "@/classes/Application";
-import { useScreenState } from "@/hooks/stores/useScreenState";
+import { PluginManagerScreen } from "../screen/PluginManagerScreen";
 
 type MenuEntry =
   | {
@@ -37,22 +36,10 @@ export function Menubar() {
   const unsetWorkspace = useWorkspaceState((state) => state.unsetWorkspace);
   const closeTabs = useTabbarViewState((state) => state.closeTabs);
   const addTab = useTabbarViewState((state) => state.addTab);
-
-  const setScreen = useScreenState((state) => state.setScreen);
+  const addViewTab = useTabbarViewState((state) => state.addViewTab);
 
   const handleOpenProject = useCallback(async () => {
     const path = await window.api.openSelectDirectoryDialog();
-    if (!path) return;
-
-    setWorkspace(new Workspace(path));
-    closeTabs();
-
-    // TODO: Reload without reloading
-    location.reload();
-  }, [setWorkspace, closeTabs]);
-
-  const handleOpenProjectPI = useCallback(async () => {
-    const path = prompt("Enter path to project:");
     if (!path) return;
 
     setWorkspace(new Workspace(path));
@@ -128,7 +115,13 @@ export function Menubar() {
           {
             type: "item",
             label: "Plugin Manager",
-            onClick: () => setScreen("plugin-manager"),
+            onClick: () =>
+              addViewTab(
+                "pluginManager",
+                <PluginManagerScreen />,
+                "ph:grid-four",
+                "Plugin Manager",
+              ),
           },
         ],
       },

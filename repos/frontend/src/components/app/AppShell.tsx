@@ -12,8 +12,6 @@ import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { BrowserPlatformCompat } from "@/platform/browser/compat/_compat";
 import { TerminalView } from "../views/TerminalView";
 import { useEffect, useState } from "react";
-import { PluginManagerScreen } from "../screen/PluginManagerScreen";
-import { useScreenState } from "@/hooks/stores/useScreenState";
 import { NotificationContainer } from "../base/Notification";
 
 const CodeEditor = dynamic(
@@ -32,8 +30,6 @@ export function AppShell() {
       state.tabs.find((t) => t.path === state.activeTabPath)?.component,
   );
 
-  const screen = useScreenState((state) => state.screen);
-
   useEffect(() => {
     if (workspace) workspace.init();
   }, [workspace]);
@@ -44,31 +40,27 @@ export function AppShell() {
       <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-row">
         <SidebarView />
         <SidebarTabView />
-        {screen == "editor" ? (
-          workspace ? (
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-                {activeTabPath && (
-                  <>
-                    <TabbarView />
-                    {activeTabComponent ? (
-                      activeTabComponent
-                    ) : (
-                      <>
-                        <CodePathView />
-                        <CodeEditor workspace={workspace} />
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-              <TerminalView />
+        {workspace ? (
+          <div className="flex-1 flex flex-col min-h-0 min-w-0">
+            <div className="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
+              {activeTabPath && (
+                <>
+                  <TabbarView />
+                  {activeTabComponent ? (
+                    activeTabComponent
+                  ) : (
+                    <>
+                      <CodePathView />
+                      <CodeEditor workspace={workspace} />
+                    </>
+                  )}
+                </>
+              )}
             </div>
-          ) : (
-            <HomeScreen />
-          )
+            <TerminalView />
+          </div>
         ) : (
-          <PluginManagerScreen />
+          <HomeScreen />
         )}
       </div>
       <Bottombar />

@@ -95,8 +95,6 @@ export class PluginHost {
       const result = await handler(data.data.pluginId, data.data.data);
 
       if (data.data.responseId) {
-        console.log(result);
-
         this.#emit("call_response", {
           pluginId: data.data.pluginId,
           namespace,

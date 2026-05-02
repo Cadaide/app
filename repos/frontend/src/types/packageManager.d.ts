@@ -19,4 +19,5 @@ interface IDetailedPackageInfo {
   description: string;
   versions: string[];
   isInstalled: boolean;
+  installedVersion: string | null;
 }
