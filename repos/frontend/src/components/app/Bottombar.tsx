@@ -11,6 +11,7 @@ export function Bottombar() {
       <div className="text-sm flex flex-row gap-4">
         <p>
           {activeTabPath &&
+            !activeTabPath.startsWith("view://") &&
             getLanguageName(getLanguage(pathToName(activeTabPath)))}
         </p>
       </div>

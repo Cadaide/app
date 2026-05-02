@@ -54,5 +54,11 @@ export function useEditorSingleton(): IEditorSingletonOutput {
     };
   }, [activeTabPath]);
 
+  useEffect(() => {
+    return () => {
+      Editor.instance.markEditorUnmounted();
+    };
+  }, []);
+
   return { onMount };
 }

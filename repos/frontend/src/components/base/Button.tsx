@@ -11,13 +11,17 @@ interface IButtonProps {
   type?: "button" | "submit" | "reset";
   isLoading?: boolean;
   disabled?: boolean;
+  className?: string;
 }
 
 export function Button(props: IButtonProps) {
   const variantClasses = {
-    primary: "bg-ctp-lavender-700 text-ctp-mantle hover:bg-ctp-lavender-700/70 disabled:bg-ctp-lavender-700/50",
-    secondary: "bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface0/70 disabled:bg-ctp-surface0/50",
-    danger: "bg-ctp-red-700 text-ctp-mantle hover:bg-ctp-red-700/70 disabled:bg-ctp-red-700/50",
+    primary:
+      "bg-ctp-lavender-700 text-ctp-mantle hover:bg-ctp-lavender-700/70 disabled:bg-ctp-lavender-700/50",
+    secondary:
+      "bg-ctp-surface0 text-ctp-text hover:bg-ctp-surface0/70 disabled:bg-ctp-surface0/50",
+    danger:
+      "bg-ctp-red-700 text-ctp-mantle hover:bg-ctp-red-700/70 disabled:bg-ctp-red-700/50",
   };
 
   const sizeClasses = {
@@ -39,10 +43,13 @@ export function Button(props: IButtonProps) {
       onClick={props.onClick}
       type={props.type ?? "button"}
       disabled={props.isLoading || props.disabled}
-      className={`${variantClasses[props.variant]} ${sizeClasses[size]} flex items-center justify-center gap-2 rounded-md cursor-pointer disabled:cursor-not-allowed transition-colors duration-300`}
+      className={`${props.className} ${variantClasses[props.variant]} ${sizeClasses[size]} flex items-center justify-center gap-2 rounded-md cursor-pointer disabled:cursor-not-allowed transition-colors duration-300`}
     >
       {props.isLoading ? (
-        <LoadingSpinner size={size === "lg" ? "md" : "sm"} className={spinnerColorClasses[props.variant]} />
+        <LoadingSpinner
+          size={size === "lg" ? "md" : "sm"}
+          className={spinnerColorClasses[props.variant]}
+        />
       ) : (
         props.iconLeft
       )}

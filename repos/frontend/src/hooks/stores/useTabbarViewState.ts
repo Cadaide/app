@@ -2,6 +2,7 @@ import { Editor } from "@/classes/Editor";
 import { IconifyIcon } from "@iconify/react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ReactNode } from "react";
 
 export const useTabbarViewState = create<{
   tabs: {
@@ -9,10 +10,17 @@ export const useTabbarViewState = create<{
     icon: string | IconifyIcon;
     name: string;
     dirty: boolean;
+    component?: ReactNode;
   }[];
   activeTabPath: string | null;
 
   addTab: (path: string, icon: string | IconifyIcon, name: string) => void;
+  addViewTab: (
+    id: string,
+    component: ReactNode,
+    icon: string | IconifyIcon,
+    name: string,
+  ) => void;
   removeTab: (path: string) => void;
   setActiveTab: (path: string) => void;
   setDirty: (path: string, dirty: boolean) => void;
@@ -37,6 +45,23 @@ export const useTabbarViewState = create<{
 
         set((state) => ({
           tabs: [...state.tabs, { path, icon, name, dirty: false }],
+          activeTabPath: path,
+        }));
+      },
+      addViewTab: (id, component, icon, name) => {
+        const path = `view://${id}`;
+        const { tabs } = get();
+
+        if (tabs.some((tab) => tab.path === path)) {
+          set({
+            activeTabPath: path,
+          });
+
+          return;
+        }
+
+        set((state) => ({
+          tabs: [...state.tabs, { path, icon, name, dirty: false, component }],
           activeTabPath: path,
         }));
       },
@@ -91,11 +116,15 @@ export const useTabbarViewState = create<{
     {
       name: "tabbar-view-state",
       partialize: (state) => ({
-        tabs: state.tabs.map((tab) => ({
-          ...tab,
-          dirty: false,
-        })),
-        activeTabPath: state.activeTabPath,
+        tabs: state.tabs
+          .filter((tab) => !tab.path.startsWith("view://"))
+          .map((tab) => ({
+            ...tab,
+            dirty: false,
+          })),
+        activeTabPath: state.activeTabPath?.startsWith("view://")
+          ? null
+          : state.activeTabPath,
       }),
     },
   ),

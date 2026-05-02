@@ -27,6 +27,10 @@ const CodeEditor = dynamic(
 export function AppShell() {
   const workspace = useWorkspaceState((state) => state.workspace);
   const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
+  const activeTabComponent = useTabbarViewState(
+    (state) =>
+      state.tabs.find((t) => t.path === state.activeTabPath)?.component,
+  );
 
   const screen = useScreenState((state) => state.screen);
 
@@ -47,8 +51,14 @@ export function AppShell() {
                 {activeTabPath && (
                   <>
                     <TabbarView />
-                    <CodePathView />
-                    <CodeEditor workspace={workspace} />
+                    {activeTabComponent ? (
+                      activeTabComponent
+                    ) : (
+                      <>
+                        <CodePathView />
+                        <CodeEditor workspace={workspace} />
+                      </>
+                    )}
                   </>
                 )}
               </div>
