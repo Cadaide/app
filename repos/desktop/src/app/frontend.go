@@ -22,9 +22,9 @@ func RunFrontendInDevMode(port int, bePort int) (*exec.Cmd, error) {
 		Command: []string{"bun", "run", "dev"},
 		Cwd:     filepath.Join(cwd, "../frontend"),
 		Env: map[string]string{
-			"PORT":                     strconv.Itoa(port),
-			"HOSTNAME":                 "127.0.0.1",
-			"NEXT_PUBLIC_BACKEND_PORT": strconv.Itoa(bePort),
+			"PORT":         strconv.Itoa(port),
+			"HOSTNAME":     "127.0.0.1",
+			"BACKEND_PORT": strconv.Itoa(bePort),
 		},
 	})
 	if err != nil {
@@ -45,9 +45,9 @@ func RunFrontend(port int, bePort int) (*exec.Cmd, error) {
 		Command: []string{nodeBinary, "server.js"},
 		Cwd:     filepath.Join(cwd, "../frontend"),
 		Env: map[string]string{
-			"PORT":                     strconv.Itoa(port),
-			"HOSTNAME":                 "127.0.0.1",
-			"NEXT_PUBLIC_BACKEND_PORT": strconv.Itoa(bePort),
+			"PORT":         strconv.Itoa(port),
+			"HOSTNAME":     "127.0.0.1",
+			"BACKEND_PORT": strconv.Itoa(bePort),
 		},
 	})
 	if err != nil {

@@ -4,6 +4,7 @@ declare global {
   interface Window {
     api: {
       platform: "native" | "";
+      env: Record<string, string>;
       openSelectDirectoryDialog: () => Promise<string | null>;
       beginWindowDrag: (x: number, y: number) => Promise<void>;
       windowClose: () => Promise<void>;

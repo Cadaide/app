@@ -1,30 +1,15 @@
-"use client";
+import Client from "./client";
 
-import dynamic from "next/dynamic";
-import { LoadingScreen } from "../components/base/LoadingScreen";
-import { Application } from "@/classes/Application";
-import { useEffect, useState } from "react";
-
-const AppShell = dynamic(
-  async () => (await import("../components/app/AppShell")).AppShell,
-  {
-    loading: () => <LoadingScreen />,
-    ssr: false,
-  },
-);
+export const dynamic = 'force-dynamic';
 
 export default function Page() {
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    Application.initialize().then(() => {
-      setInitialized(true);
-    });
-  }, []);
+  const env = process.env;
 
   return (
-    <div className="w-screen h-screen">
-      {initialized ? <AppShell /> : <LoadingScreen />}
-    </div>
+    <Client
+      env={{
+        BACKEND_PORT: env.BACKEND_PORT as string,
+      }}
+    />
   );
 }

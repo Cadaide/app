@@ -1,10 +1,11 @@
+import { ApplicationConfig } from "./ApplicationConfig";
 import { Settings } from "./Settings";
 
 export class Application {
   static #initialized: boolean = false;
   static #initializedListeners: (() => void)[] = [];
 
-  static async initialize() {
+  static async initialize(env: Record<string, string>) {
     if (Application.#initialized) return;
 
     await Settings.instance.load();

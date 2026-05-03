@@ -6,12 +6,13 @@ import { ProjectAPI } from "./project";
 import { PluginAPI } from "./plugin";
 import { ApplicationConfig } from "@/classes/ApplicationConfig";
 
-export const apiAdapter = axios.create({
-  baseURL: `http://localhost:${ApplicationConfig.backendPort}`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+export const apiAdapter = () =>
+  axios.create({
+    baseURL: `http://localhost:${ApplicationConfig.backendPort}`,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
 export const API = {
   fs: FsAPI,

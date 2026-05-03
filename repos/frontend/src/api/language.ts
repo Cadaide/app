@@ -30,7 +30,7 @@ export interface ILanguageConfig {
 
 export const LanguageAPI = {
   getConfig: async (id: string): Promise<ILanguageConfig | null> => {
-    const response = await apiAdapter.get(`/language/${id}/config`);
+    const response = await apiAdapter().get(`/language/${id}/config`);
 
     return response.data ?? null;
   },
