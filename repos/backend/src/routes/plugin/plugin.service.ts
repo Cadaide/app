@@ -189,13 +189,17 @@ export class PluginService implements OnModuleInit {
     const session = this.#findSessionBySocket(client);
     if (!session) return;
 
-    session.pluginHost.call(
-      payload.pluginId,
-      payload.namespace,
-      payload.command,
-      payload.data,
-      payload.responseId,
-    );
+    try {
+      session.pluginHost.call(
+        payload.pluginId,
+        payload.namespace,
+        payload.command,
+        payload.data,
+        payload.responseId,
+      );
+    } catch (e) {
+      throw e;
+    }
   }
 
   async handleHostCallResponse(client: WebSocket, payload: any) {

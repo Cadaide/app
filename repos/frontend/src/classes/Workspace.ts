@@ -13,6 +13,8 @@ export class Workspace {
 
   #isInitialized: boolean = false;
 
+  static #instance: Workspace;
+
   get pluginHost() {
     return this.#pluginHost;
   }
@@ -23,6 +25,12 @@ export class Workspace {
     this.#filesystem = new Filesystem(path);
     this.#pluginHost = new PluginHost();
     this.#window = new Window(this);
+
+    Workspace.#instance = this;
+  }
+
+  static get instance() {
+    return this.#instance;
   }
 
   async init() {

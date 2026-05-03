@@ -296,7 +296,7 @@ export function PackageManagerViewPackageDetailView(
       </div>
 
       <div className="mt-8 flex flex-col gap-4 min-w-0 w-full">
-        <div className="prose prose-invert prose-headings:text-ctp-text prose-p:text-ctp-subtext0 prose-a:text-ctp-lavender prose-strong:text-ctp-text prose-code:text-ctp-lavender prose-pre:bg-ctp-mantle prose-li:text-ctp-subtext0 max-w-none min-w-0 w-full break-words">
+        <div className="prose prose-invert prose-headings:text-ctp-text prose-p:text-ctp-subtext0 prose-a:text-ctp-lavender prose-strong:text-ctp-text prose-code:text-ctp-lavender prose-pre:bg-ctp-mantle prose-li:text-ctp-subtext0 max-w-none min-w-0 w-full wrap-break-word">
           <Markdown
             remarkPlugins={[remarkGFM]}
             rehypePlugins={[

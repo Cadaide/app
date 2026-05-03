@@ -5,6 +5,7 @@ import { LanguageAPI } from "./language";
 import { ProjectAPI } from "./project";
 import { PluginAPI } from "./plugin";
 import { ApplicationConfig } from "@/classes/ApplicationConfig";
+import { ShellAPI } from "./shell";
 
 export const apiAdapter = () =>
   axios.create({
@@ -20,4 +21,5 @@ export const API = {
   language: LanguageAPI,
   project: ProjectAPI,
   plugin: PluginAPI,
+  shell: ShellAPI,
 };

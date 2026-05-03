@@ -6,6 +6,7 @@ import { HealthModule } from './routes/health/health.module';
 import { LanguageModule } from './routes/language/language.module';
 import { ProjectModule } from './routes/project/project.module';
 import { PluginModule } from './routes/plugin/plugin.module';
+import { ShellModule } from './routes/shell/shell.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PluginModule } from './routes/plugin/plugin.module';
     LanguageModule,
     ProjectModule,
     PluginModule,
+    ShellModule,
   ],
 })
 export class AppModule {}

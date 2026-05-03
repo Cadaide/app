@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { PluginCompiler } from './PluginCompiler';
 import { IPluginParseData, PluginParser } from './PluginParser';
 import { PluginVM } from './PluginVM';
@@ -103,7 +104,7 @@ export class PluginHost {
       }
     } else {
       const plugin = this.#plugins[pluginId];
-      if (!plugin) throw new Error(`Plugin "${pluginId}" not found`);
+      if (!plugin) return;
 
       plugin.vm.call(namespace, command, data, responseId);
     }

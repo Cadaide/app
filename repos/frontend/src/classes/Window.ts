@@ -1,6 +1,7 @@
 import { notify } from "@/hooks/stores/useNotificationState";
 import { IPluginRepoIndexEntry } from "@/api/plugin";
 import { Workspace } from "./Workspace";
+import { API } from "@/api";
 
 export class Window {
   #workspace: Workspace;
@@ -58,6 +59,18 @@ export class Window {
         });
 
         return await response.text();
+      },
+    );
+
+    this.#workspace.pluginHost.provideCallHandler(
+      "cmd",
+      "run",
+      async (source: string, _data: unknown) => {
+        const data = _data as { command: string[] };
+
+        return await API.shell.run(data.command, {
+          cwd: Workspace.instance.path,
+        });
       },
     );
   }
