@@ -2,6 +2,23 @@
   "name": "@cadaide/rpc",
   "module": "src/index.ts",
   "type": "module",
+  "license": "MIT",
+  "version": "1.0.0",
+  "author": {
+    "name": "Martin Petr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cadaide/app",
+    "directory": "packages/@cadaide/rpc"
+  },
+  "homepage": "https://github.com/Cadaide/app/tree/main/packages/@cadaide/rpc",
+  "exports": {
+    "default": "./src/index.ts",
+    "import": "./src/index.ts",
+    "require": "./src/index.ts",
+    "types": "./src/index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/ws": "^8.18.1",
