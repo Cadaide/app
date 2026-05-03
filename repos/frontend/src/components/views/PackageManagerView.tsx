@@ -15,6 +15,7 @@ import { Select } from "../base/Select";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { GhostScrollbar } from "../utils/GhostScrollbar";
+import { Settings } from "@/classes/Settings";
 
 interface IPackageManagerViewInstalledPackageProps {
   installedPackage: IInstalledPackageInfo;
@@ -32,24 +33,40 @@ export function PackageManagerView() {
   const workspace = useWorkspaceState((state) => state.workspace);
   const [search, setSearch] = useState("");
 
+  const getProviderId = async () => {
+    const language = await workspace!.getLanguage();
+    await Settings.instance.load();
+    const setting = await Settings.instance.get(
+      "packageManager.provider." + language,
+    );
+
+    return setting as string;
+  };
+
+  const { data: providerId, isLoading: providerIdLoading } = useAwait(
+    () => getProviderId(),
+    [workspace],
+    () => !!workspace,
+  );
+
   const { data: installedPackages, isLoading: installedPackagesLoading } =
     useAwait(
       () =>
         workspace!.pluginHost.awaitCall(
-          "app.cadaide.playground",
+          providerId!,
           "packageManager",
           "listInstalled",
           {},
         ),
-      [],
-      () => !!workspace,
+      [workspace, providerIdLoading],
+      () => !!workspace && !!providerId && providerId.trim().length > 0,
     );
 
   const { data: searchedPackages, isLoading: searchedPackagesLoading } =
     useAwait(
       () => {
         return workspace!.pluginHost.awaitCall(
-          "app.cadaide.playground",
+          providerId!,
           "packageManager",
           "search",
           {
@@ -57,12 +74,26 @@ export function PackageManagerView() {
           },
         );
       },
-      [search],
-      () => !!workspace && search.trim().length > 0,
+      [workspace, providerId, search],
+      () =>
+        !!workspace &&
+        !!providerId &&
+        providerId.trim().length > 0 &&
+        search.trim().length > 0,
     );
 
-  if (installedPackagesLoading || searchedPackagesLoading)
+  if (installedPackagesLoading || searchedPackagesLoading || providerIdLoading)
     return <LoadingScreen />;
+
+  if (!providerId || providerId.trim().length == 0)
+    return (
+      <div className="w-full h-full flex items-center justify-center p-4">
+        <p className="text-gray-500 text-center">
+          No package manager available for this project. Please install plugin
+          that provides it.
+        </p>
+      </div>
+    );
 
   return (
     <div className="flex h-full w-full flex-col p-1">

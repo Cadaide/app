@@ -4,6 +4,9 @@ const SettingsSchema = z.object({
   editor: z.object({
     fontSize: z.number().default(18),
   }),
+  packageManager: z.object({
+    provider: z.record(z.string(), z.string()),
+  }),
 });
 
 export const defaultSettings: z.infer<typeof SettingsSchema> & {
@@ -12,6 +15,9 @@ export const defaultSettings: z.infer<typeof SettingsSchema> & {
   $schema: './settings.schema.json',
   editor: {
     fontSize: 18,
+  },
+  packageManager: {
+    provider: {},
   },
 };
 
