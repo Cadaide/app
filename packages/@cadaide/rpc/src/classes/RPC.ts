@@ -6,8 +6,18 @@ import {
   type IPacket,
   type IResponsePacket,
 } from "../types/Packet";
-import { v4 } from "uuid";
 import type { IRemoteMessageHandler } from "../types/Handler";
+
+function generateId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID)
+    return crypto.randomUUID();
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 export class RPC {
   // If true, log debug messages
@@ -65,7 +75,7 @@ export class RPC {
     // Construct a packet
     const packet: IPacket = {
       type: EPacketType.RPCPacket,
-      id: v4(),
+      id: generateId(),
       kind: EPacketKind.Call,
       name,
       args,
