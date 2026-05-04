@@ -2,10 +2,34 @@
   "name": "@cadaide/plugin-vm",
   "module": "src/index.ts",
   "type": "module",
+  "license": "MIT",
+  "author": {
+    "name": "Martin Petr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cadaide/app",
+    "directory": "packages/@cadaide/plugin-vm"
+  },
+  "homepage": "https://github.com/Cadaide/app/tree/main/packages/@cadaide/plugin-vm",
+  "exports": {
+    "default": "./src/index.ts",
+    "import": "./src/index.ts",
+    "require": "./src/index.ts",
+    "types": "./src/index.ts"
+  },
+  "version": "1.0.0",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/node": "^25.6.0"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@cadaide/plugin": "../plugin",
+    "@cadaide/rpc": "1.0.1",
+    "esbuild": "^0.28.0",
+    "quickjs-emscripten": "^0.32.0"
   }
 }
