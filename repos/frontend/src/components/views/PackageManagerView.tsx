@@ -19,16 +19,19 @@ import { Settings } from "@/classes/Settings";
 
 interface IPackageManagerViewInstalledPackageProps {
   installedPackage: IInstalledPackageInfo;
+  providerId: string;
   reload: () => void;
 }
 
 interface IPackageManagerViewSearchedPackageProps {
   searchedPackage: IPackageInfo;
+  providerId: string;
   reload: () => void;
 }
 
 interface IPackageManagerViewPackageDetailViewProps {
   package: IPackageInfo | IInstalledPackageInfo;
+  providerId: string;
   reload: () => void;
 }
 
@@ -123,6 +126,7 @@ export function PackageManagerView() {
               <PackageManagerViewSearchedPackage
                 key={pkg.id}
                 searchedPackage={pkg}
+                providerId={providerId!}
                 reload={() => {
                   reloadInstalledPackages();
                   reloadSearchedPackages();
@@ -133,6 +137,7 @@ export function PackageManagerView() {
               <PackageManagerViewInstalledPackage
                 key={pkg.id}
                 installedPackage={pkg}
+                providerId={providerId!}
                 reload={() => {
                   reloadInstalledPackages();
                   reloadSearchedPackages();
@@ -154,6 +159,7 @@ export function PackageManagerViewInstalledPackage(
       `packageManager_pkg_${props.installedPackage.id}`,
       <PackageManagerViewPackageDetailView
         package={props.installedPackage}
+        providerId={props.providerId}
         reload={props.reload}
       />,
       "ph:books",
@@ -197,12 +203,13 @@ export function PackageManagerViewSearchedPackage(
       `packageManager_pkg_${props.searchedPackage.id}`,
       <PackageManagerViewPackageDetailView
         package={props.searchedPackage}
+        providerId={props.providerId}
         reload={props.reload}
       />,
       "ph:books",
       `${props.searchedPackage.name}`,
     );
-  }, [addViewTab, props.searchedPackage]);
+  }, [addViewTab, props.searchedPackage, props.providerId]);
 
   return (
     <div
@@ -237,13 +244,13 @@ export function PackageManagerViewPackageDetailView(
   const { data, isLoading, reload } = useAwait(
     () =>
       workspace!.pluginHostSession.callProcedure<IDetailedPackageInfo>(
-        "app.cadaide.playground",
+        props.providerId,
         "packageManager.detail",
         {
           id: props.package.id,
         },
       ),
-    [props.package],
+    [props.package, props.providerId],
     () => !!workspace,
   );
 
@@ -253,7 +260,7 @@ export function PackageManagerViewPackageDetailView(
       setProcesing(true);
 
       await workspace.pluginHostSession.callProcedure(
-        "app.cadaide.playground",
+        props.providerId,
         "packageManager.install",
         {
           id: props.package.id,
@@ -273,7 +280,7 @@ export function PackageManagerViewPackageDetailView(
     setProcesing(true);
 
     await workspace.pluginHostSession.callProcedure(
-      "app.cadaide.playground",
+      props.providerId,
       "packageManager.uninstall",
       {
         id: props.package.id,
