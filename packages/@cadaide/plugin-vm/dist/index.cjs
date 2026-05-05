@@ -195,10 +195,10 @@ var VMRPCJSLib = class {
     }
   }
   #postToVM(context, target, msg) {
+    const payload = JSON.stringify(JSON.stringify({ target, message: msg }));
     const code = `
-    const payload = ${JSON.stringify(JSON.stringify({ target, message: msg }))};
     for (const handler of globalThis.___vm_rpc.handlers) {
-      handler(payload);
+      handler(${payload});
     }
     `;
     const result = context.evalCode(code);

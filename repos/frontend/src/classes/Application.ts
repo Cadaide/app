@@ -5,7 +5,7 @@ export class Application {
   static #initialized: boolean = false;
   static #initializedListeners: (() => void)[] = [];
 
-  static async initialize(env: Record<string, string>) {
+  static async initialize() {
     if (Application.#initialized) return;
 
     await Settings.instance.load();

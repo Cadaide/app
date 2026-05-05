@@ -1,19 +1,21 @@
 import { HostEvents } from "./host/events";
-import { CadaideCmd } from "./lib/cmd";
-import { CadaideEventOn } from "./lib/events";
-import { CadaideHttp } from "./lib/http";
+import { HostRPC } from "./host/rpc";
+import { CadaideHTTP } from "./lib/http";
 import { CadaideNotifications } from "./lib/notifications";
 import { CadaidePackageManager } from "./lib/packageManager";
+import { CadaideShell } from "./lib/shell";
 
 export * from "./types/PackageManager";
 
-HostEvents.initialize();
+void HostRPC.instance;
 
 export const cadaide = {
   notifications: CadaideNotifications,
-  http: CadaideHttp,
   packageManager: CadaidePackageManager,
-  cmd: CadaideCmd,
+  http: CadaideHTTP,
+  shell: CadaideShell,
 
-  on: CadaideEventOn,
+  events: HostEvents,
 };
+
+HostRPC.instance.backend.callProcedure("log", "TEST");

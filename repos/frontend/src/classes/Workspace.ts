@@ -2,28 +2,28 @@ import { Filesystem } from "./Filesystem";
 import { basename } from "@/utils/files/path";
 import { API } from "@/api";
 import { Window } from "./Window";
-import { PluginHost } from "./PluginHost";
+import { PluginHostSession } from "./PluginHostSession";
 
 export class Workspace {
   #path: string;
 
   #filesystem: Filesystem;
   #window: Window;
-  #pluginHost: PluginHost;
+  #pluginHostSession: PluginHostSession;
 
   #isInitialized: boolean = false;
 
   static #instance: Workspace;
 
-  get pluginHost() {
-    return this.#pluginHost;
+  get pluginHostSession(): PluginHostSession {
+    return this.#pluginHostSession;
   }
 
   constructor(path: string) {
     this.#path = path;
 
     this.#filesystem = new Filesystem(path);
-    this.#pluginHost = new PluginHost();
+    this.#pluginHostSession = new PluginHostSession();
     this.#window = new Window(this);
 
     Workspace.#instance = this;
@@ -39,7 +39,8 @@ export class Workspace {
 
     this.#window.init();
 
-    this.#pluginHost.call("@all", "events", "initialize", {});
+    // Notify plugins about the initialization
+    await this.#pluginHostSession.callProcedure("*", "events.initialized");
   }
 
   get name(): string {

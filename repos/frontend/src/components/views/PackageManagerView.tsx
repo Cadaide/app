@@ -19,14 +19,17 @@ import { Settings } from "@/classes/Settings";
 
 interface IPackageManagerViewInstalledPackageProps {
   installedPackage: IInstalledPackageInfo;
+  reload: () => void;
 }
 
 interface IPackageManagerViewSearchedPackageProps {
   searchedPackage: IPackageInfo;
+  reload: () => void;
 }
 
 interface IPackageManagerViewPackageDetailViewProps {
   package: IPackageInfo | IInstalledPackageInfo;
+  reload: () => void;
 }
 
 export function PackageManagerView() {
@@ -49,38 +52,41 @@ export function PackageManagerView() {
     () => !!workspace,
   );
 
-  const { data: installedPackages, isLoading: installedPackagesLoading } =
-    useAwait(
-      () =>
-        workspace!.pluginHost.awaitCall(
-          providerId!,
-          "packageManager",
-          "listInstalled",
-          {},
-        ),
-      [workspace, providerIdLoading],
-      () => !!workspace && !!providerId && providerId.trim().length > 0,
-    );
+  const {
+    data: installedPackages,
+    isLoading: installedPackagesLoading,
+    reload: reloadInstalledPackages,
+  } = useAwait(
+    () =>
+      workspace!.pluginHostSession.callProcedure<IInstalledPackageInfo[]>(
+        providerId!,
+        "packageManager.listInstalled",
+      ),
+    [workspace, providerIdLoading],
+    () => !!workspace && !!providerId && providerId.trim().length > 0,
+  );
 
-  const { data: searchedPackages, isLoading: searchedPackagesLoading } =
-    useAwait(
-      () => {
-        return workspace!.pluginHost.awaitCall(
-          providerId!,
-          "packageManager",
-          "search",
-          {
-            query: search,
-          },
-        );
-      },
-      [workspace, providerId, search],
-      () =>
-        !!workspace &&
-        !!providerId &&
-        providerId.trim().length > 0 &&
-        search.trim().length > 0,
-    );
+  const {
+    data: searchedPackages,
+    isLoading: searchedPackagesLoading,
+    reload: reloadSearchedPackages,
+  } = useAwait(
+    () => {
+      return workspace!.pluginHostSession.callProcedure<IPackageInfo[]>(
+        providerId!,
+        "packageManager.search",
+        {
+          query: search,
+        },
+      );
+    },
+    [workspace, providerId, search],
+    () =>
+      !!workspace &&
+      !!providerId &&
+      providerId.trim().length > 0 &&
+      search.trim().length > 0,
+  );
 
   if (installedPackagesLoading || searchedPackagesLoading || providerIdLoading)
     return <LoadingScreen />;
@@ -113,16 +119,24 @@ export function PackageManagerView() {
 
       <GhostScrollbar thumbSize={10}>
         {search.trim().length > 0 && searchedPackages
-          ? (searchedPackages as IPackageInfo[]).map((pkg) => (
+          ? searchedPackages?.result.map((pkg) => (
               <PackageManagerViewSearchedPackage
                 key={pkg.id}
                 searchedPackage={pkg}
+                reload={() => {
+                  reloadInstalledPackages();
+                  reloadSearchedPackages();
+                }}
               />
             ))
-          : (installedPackages as IInstalledPackageInfo[])?.map((pkg) => (
+          : installedPackages?.result?.map((pkg) => (
               <PackageManagerViewInstalledPackage
                 key={pkg.id}
                 installedPackage={pkg}
+                reload={() => {
+                  reloadInstalledPackages();
+                  reloadSearchedPackages();
+                }}
               />
             ))}
       </GhostScrollbar>
@@ -138,7 +152,10 @@ export function PackageManagerViewInstalledPackage(
   const handleClick = useCallback(() => {
     addViewTab(
       `packageManager_pkg_${props.installedPackage.id}`,
-      <PackageManagerViewPackageDetailView package={props.installedPackage} />,
+      <PackageManagerViewPackageDetailView
+        package={props.installedPackage}
+        reload={props.reload}
+      />,
       "ph:books",
       `${props.installedPackage.name} (${props.installedPackage.installedVersion})`,
     );
@@ -178,7 +195,10 @@ export function PackageManagerViewSearchedPackage(
   const handleClick = useCallback(() => {
     addViewTab(
       `packageManager_pkg_${props.searchedPackage.id}`,
-      <PackageManagerViewPackageDetailView package={props.searchedPackage} />,
+      <PackageManagerViewPackageDetailView
+        package={props.searchedPackage}
+        reload={props.reload}
+      />,
       "ph:books",
       `${props.searchedPackage.name}`,
     );
@@ -212,16 +232,15 @@ export function PackageManagerViewPackageDetailView(
 ) {
   const workspace = useWorkspaceState((state) => state.workspace);
 
-  const { data, isLoading } = useAwait<IDetailedPackageInfo>(
+  const { data, isLoading, reload } = useAwait(
     () =>
-      workspace!.pluginHost.awaitCall(
+      workspace!.pluginHostSession.callProcedure<IDetailedPackageInfo>(
         "app.cadaide.playground",
-        "packageManager",
-        "detail",
+        "packageManager.detail",
         {
           id: props.package.id,
         },
-      ) as unknown as Promise<IDetailedPackageInfo>,
+      ),
     [props.package],
     () => !!workspace,
   );
@@ -230,19 +249,34 @@ export function PackageManagerViewPackageDetailView(
     async (version: string) => {
       if (!workspace) return;
 
-      await workspace.pluginHost.awaitCall(
+      await workspace.pluginHostSession.callProcedure(
         "app.cadaide.playground",
-        "packageManager",
-        "install",
+        "packageManager.install",
         {
           id: props.package.id,
           version: version,
         },
       );
+
+      await reload();
+      props.reload();
     },
-    [props.package, workspace],
+    [props, workspace, reload],
   );
-  const handleUninstall = useCallback(() => {}, []);
+  const handleUninstall = useCallback(async () => {
+    if (!workspace) return;
+
+    await workspace.pluginHostSession.callProcedure(
+      "app.cadaide.playground",
+      "packageManager.uninstall",
+      {
+        id: props.package.id,
+      },
+    );
+
+    await reload();
+    props.reload();
+  }, [props, workspace, reload]);
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -254,19 +288,23 @@ export function PackageManagerViewPackageDetailView(
         </div>
         <div className="flex flex-col grow gap-2">
           <div className="flex flex-col">
-            <h1 className="text-3xl font-bold text-ctp-text">{data.name}</h1>
-            <p className="text-sm text-ctp-subtext0">{data.id}</p>
+            <h1 className="text-3xl font-bold text-ctp-text">
+              {data.result.name}
+            </h1>
+            <p className="text-sm text-ctp-subtext0">{data.result.id}</p>
           </div>
-          <p className="text-md text-ctp-subtext1">{data.shortDescription}</p>
+          <p className="text-md text-ctp-subtext1">
+            {data.result.shortDescription}
+          </p>
 
           <div className="flex flex-row items-center gap-3">
-            {data.isInstalled ? (
+            {data.result.isInstalled ? (
               <>
                 <Button variant="danger" onClick={handleUninstall}>
                   Uninstall
                 </Button>
                 <span className="text-sm text-ctp-subtext0 ml-2">
-                  {data.installedVersion}
+                  {data.result.installedVersion}
                 </span>
               </>
             ) : (
@@ -280,8 +318,8 @@ export function PackageManagerViewPackageDetailView(
                     Install
                   </Button>
                   <Select
-                    defaultValue={data.versions[0]}
-                    options={data.versions.map((version) => ({
+                    defaultValue={data.result.versions[0]}
+                    options={data.result.versions.map((version) => ({
                       label: version,
                       id: version,
                     }))}
@@ -313,7 +351,7 @@ export function PackageManagerViewPackageDetailView(
               ],
             ]}
           >
-            {data.description}
+            {data.result.description}
           </Markdown>
         </div>
       </div>

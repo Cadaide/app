@@ -1,16 +1,14 @@
-import { HostBridge } from "../host/bridge";
+import { HostRPC } from "../host/rpc";
 
-export const CadaideHttp = {
-  get: (url: string, headers?: Record<string, string>) =>
-    new Promise((r) =>
-      HostBridge.executeWithResponse(
-        "http",
-        "get",
-        {
-          url,
-          headers,
-        },
-        (data) => r(data),
-      ),
-    ),
-};
+export class CadaideHTTP {
+  // TODO: Proper axios typing
+  static async get<T>(url: string, options?: any) {
+    const res = await HostRPC.instance.backend.callProcedure(
+      "http.get",
+      url,
+      options,
+    );
+
+    return res as T;
+  }
+}

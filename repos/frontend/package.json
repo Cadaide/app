@@ -16,6 +16,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@cadaide/rpc": "^1.1.1",
     "@iconify/react": "^6.0.2",
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/typography": "^0.5.19",
@@ -57,6 +58,7 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "esbuild",
     "sharp",
     "unrs-resolver"
   ]

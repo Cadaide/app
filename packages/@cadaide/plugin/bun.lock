@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "@cadaide/plugin",
+      "dependencies": {
+        "@cadaide/rpc": "^1.0.1",
+      },
       "devDependencies": {
         "@types/bun": "latest",
       },
@@ -13,6 +16,8 @@
     },
   },
   "packages": {
+    "@cadaide/rpc": ["@cadaide/rpc@1.0.1", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-tzAADks2jwrAHPvJ4i2qLCSjyZ7FFDU1XuNPW9gQTbEpLC4ztvD/sSaX2sK5rvN++qMHmx4LMIT3CIrzfLAuog=="],
+
     "@types/bun": ["@types/bun@1.3.13", "", { "dependencies": { "bun-types": "1.3.13" } }, "sha512-9fqXWk5YIHGGnUau9TEi+qdlTYDAnOj+xLCmSTwXfAIqXr2x4tytJb43E9uCvt09zJURKXwAtkoH4nLQfzeTXw=="],
 
     "@types/node": ["@types/node@25.6.0", "", { "dependencies": { "undici-types": "~7.19.0" } }, "sha512-+qIYRKdNYJwY3vRCZMdJbPLJAtGjQBudzZzdzwQYkEPQd+PJGixUL5QfvCLDaULoLv+RhT3LDkwEfKaAkgSmNQ=="],

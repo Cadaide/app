@@ -16,18 +16,22 @@ export class ShellService {
         env: process.env, // TODO: Ensure this is fine for security
       });
 
-      let buffer = '';
+      let stdout = '';
+      let stderr = '';
 
       child.on('exit', () => {
-        r(buffer);
+        r({
+          stdout,
+          stderr,
+        });
       });
 
       child.stdout.on('data', (data) => {
-        buffer += data;
+        stdout += data;
       });
 
       child.stderr.on('data', (data) => {
-        buffer += data;
+        stderr += data;
       });
     });
   }

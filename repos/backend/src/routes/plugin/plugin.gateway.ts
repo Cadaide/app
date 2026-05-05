@@ -19,7 +19,7 @@ export class PluginGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.pluginService.disposeHostSession(client);
   }
 
-  @SubscribeMessage('call_response')
+  /*@SubscribeMessage('call_response')
   handleCallResponse(client: any, payload: any) {
     this.pluginService.handleHostCallResponse(client, payload);
   }
@@ -27,5 +27,5 @@ export class PluginGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('call')
   handleCall(client: any, payload: any) {
     this.pluginService.handleHostCall(client, payload);
-  }
+  }*/
 }

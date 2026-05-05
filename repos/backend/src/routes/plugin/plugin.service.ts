@@ -5,19 +5,24 @@ import { existsSync } from 'fs';
 import { cp, mkdir, readdir, readFile, rmdir, writeFile } from 'fs/promises';
 import JSZip from 'jszip';
 import path from 'path';
-import { PluginHost } from 'src/classes/plugin/PluginHost';
+import { PluginHostSession } from 'src/classes/plugin/PluginHostSession';
+import { RPCForwarder } from 'src/classes/RPCForwarder';
 import { CFG_PATH_PLUGINS_DIR } from 'src/config/paths';
 import { PLUGIN_REPOINDEX_URL } from 'src/config/plugins';
 import { IPluginIndex, IPluginRepoIndex } from 'src/types/Plugin';
+import { PluginLibService } from './lib/lib.service';
 
 @Injectable()
 export class PluginService implements OnModuleInit {
-  #hostSessions: {
-    [key: string]: {
+  #hostSessions: Map<
+    string,
+    {
       ws: WebSocket;
-      pluginHost: PluginHost;
-    };
-  } = {};
+      pluginHost: PluginHostSession;
+    }
+  > = new Map();
+
+  constructor(private readonly pluginLibService: PluginLibService) {}
 
   async onModuleInit() {
     if (existsSync(CFG_PATH_PLUGINS_DIR)) return;
@@ -142,36 +147,35 @@ export class PluginService implements OnModuleInit {
 
   async createHostSession(client: WebSocket) {
     const sessionId = randomUUID();
+    const pluginHost = new PluginHostSession();
 
-    const pluginHost = new PluginHost();
-
-    this.#hostSessions[sessionId] = {
-      ws: client,
-      pluginHost: pluginHost,
-    };
+    this.#hostSessions.set(sessionId, { ws: client, pluginHost });
 
     const installedPlugins = await this.listInstalled();
 
     for (const plugin of installedPlugins) {
-      await pluginHost.loadPlugin(plugin.id);
+      await pluginHost.loadPlugin(
+        plugin.id,
+        (message: string) => {
+          client.send(
+            JSON.stringify({
+              pluginId: plugin.id,
+              message,
+            }),
+          );
+        },
+        this.pluginLibService.createProcedures.bind(this.pluginLibService),
+      );
     }
 
-    pluginHost.addListener(
-      (pluginId, type, namespace, command, data, responseId) => {
-        const payload = JSON.stringify({
-          event: type == 'execute' ? 'call' : type,
-          data: {
-            pluginId,
-            namespace,
-            command,
-            responseId,
-            data,
-          },
-        });
+    client.onmessage = (ev) => {
+      const message = JSON.parse(ev.data.toString()) as {
+        pluginId: string;
+        message: string;
+      };
 
-        client.send(payload);
-      },
-    );
+      pluginHost.processFrontendMessage(message.pluginId, message.message);
+    };
 
     await pluginHost.start();
   }
@@ -180,51 +184,15 @@ export class PluginService implements OnModuleInit {
     const session = this.#findSessionBySocket(client);
     if (!session) return;
 
-    session.pluginHost.dispose();
-
-    delete this.#hostSessions[session.sessionId];
-  }
-
-  async handleHostCall(client: WebSocket, payload: any) {
-    const session = this.#findSessionBySocket(client);
-    if (!session) return;
-
-    try {
-      session.pluginHost.call(
-        payload.pluginId,
-        payload.namespace,
-        payload.command,
-        payload.data,
-        payload.responseId,
-      );
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async handleHostCallResponse(client: WebSocket, payload: any) {
-    const session = this.#findSessionBySocket(client);
-    if (!session) return;
-
-    session.pluginHost.emitCallResponse(
-      payload.pluginId,
-      payload.namespace,
-      payload.command,
-      payload.data,
-      payload.responseId,
-    );
+    await session.pluginHost.dispose();
+    this.#hostSessions.delete(session.sessionId);
   }
 
   #findSessionBySocket(client: WebSocket) {
-    const session = Object.entries(this.#hostSessions).find(
-      ([_, session]) => session.ws === client,
-    );
+    for (const [sessionId, session] of this.#hostSessions.entries()) {
+      if (session.ws === client) return { sessionId, ...session };
+    }
 
-    if (!session) return null;
-
-    return {
-      sessionId: session[0],
-      ...session[1],
-    };
+    return null;
   }
 }

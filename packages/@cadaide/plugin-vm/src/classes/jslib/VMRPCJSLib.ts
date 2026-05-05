@@ -48,10 +48,11 @@ export class VMRPCJSLib {
   }
 
   #postToVM(context: QuickJSContext, target: string, msg: string) {
+    const payload = JSON.stringify(JSON.stringify({ target, message: msg }));
+
     const code = `
-    const payload = ${JSON.stringify(JSON.stringify({ target, message: msg }))};
     for (const handler of globalThis.___vm_rpc.handlers) {
-      handler(payload);
+      handler(${payload});
     }
     `;
 

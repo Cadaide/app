@@ -1,56 +1,43 @@
-import { HostBridge } from "../host/bridge";
+import { HostRPC } from "../host/rpc";
 import type { IPackageManager } from "../types/PackageManager";
 
-export const CadaidePackageManager = {
-  provide(provider: new () => IPackageManager) {
-    HostBridge.provideCallHandler(
-      "packageManager",
-      "listInstalled",
-      async () => {
-        const instance = new provider();
+export class CadaidePackageManager {
+  static provide(provider: new () => IPackageManager) {
+    const instance = new provider();
 
+    HostRPC.instance.frontend.registerProcedure(
+      "packageManager.listInstalled",
+      async () => {
         return await instance.listInstalled();
       },
     );
 
-    HostBridge.provideCallHandler(
-      "packageManager",
-      "search",
+    HostRPC.instance.frontend.registerProcedure(
+      "packageManager.search",
       async ({ query }: any) => {
-        const instance = new provider();
-
         return await instance.search(query);
       },
     );
 
-    HostBridge.provideCallHandler(
-      "packageManager",
-      "detail",
+    HostRPC.instance.frontend.registerProcedure(
+      "packageManager.detail",
       async ({ id }: any) => {
-        const instance = new provider();
-
         return await instance.detail(id);
       },
     );
 
-    HostBridge.provideCallHandler(
-      "packageManager",
-      "install",
+    HostRPC.instance.frontend.registerProcedure(
+      "packageManager.install",
       async ({ id, version }: any) => {
-        const instance = new provider();
-
         return await instance.install(id, version);
       },
     );
 
-    HostBridge.provideCallHandler(
-      "packageManager",
-      "uninstall",
+    HostRPC.instance.frontend.registerProcedure(
+      "packageManager.uninstall",
       async ({ id }: any) => {
-        const instance = new provider();
-
         return await instance.uninstall(id);
       },
     );
-  },
-};
+  }
+}

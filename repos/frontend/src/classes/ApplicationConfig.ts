@@ -2,8 +2,6 @@ export class ApplicationConfig {
   static #env: Record<string, string> | undefined;
 
   static get backendPort(): number {
-    console.log("getEnv", this.#env);
-
     return (
       Number(
         this.#env
@@ -16,8 +14,6 @@ export class ApplicationConfig {
   }
 
   static setEnv(env: Record<string, string>) {
-    console.log("setEnv", env);
-
     this.#env = env;
   }
 }
