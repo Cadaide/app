@@ -44,7 +44,7 @@ export class Workspace {
     this.#window.init();
 
     // Notify plugins about the initialization
-    await this.#pluginHostSession.callProcedure("*", "events.initialized");
+    await this.#pluginHostSession.initialize();
   }
 
   get name(): string {

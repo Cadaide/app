@@ -177,6 +177,12 @@ export class PluginService implements OnModuleInit {
       pluginHost.processFrontendMessage(message.pluginId, message.message);
     };
 
+    client.send(
+      JSON.stringify({
+        pluginHostReady: true,
+      }),
+    );
+
     await pluginHost.start();
   }
 

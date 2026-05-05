@@ -7,6 +7,10 @@ export class PluginHostSession {
   #rpc: RPC;
 
   #queuedMessages: Array<string> = [];
+  #isReady: boolean = false;
+
+  #onceInitializedCallbacks: Array<() => void> = [];
+  #isInitialized: boolean = false;
 
   constructor() {
     this.#socket = new WebSocket(
@@ -17,6 +21,8 @@ export class PluginHostSession {
     this.#socket.addEventListener("open", () => this.#onOpen());
 
     this.#socket.addEventListener("message", (event) => {
+      if (JSON.parse(event.data).pluginHostReady) return this.#onReady();
+
       const parsed = JSON.parse(event.data);
       const parsedPacket = JSON.parse(parsed.message);
 
@@ -107,12 +113,39 @@ export class PluginHostSession {
   }
 
   #trySend(data: string) {
-    if (this.#socket.readyState === WebSocket.OPEN) this.#socket.send(data);
+    if (this.#socket.readyState === WebSocket.OPEN && this.#isReady)
+      this.#socket.send(data);
     else this.#queuedMessages.push(data);
   }
 
-  #onOpen() {
+  #onOpen() {}
+
+  #onReady() {
+    this.#isReady = true;
     this.#queuedMessages.forEach((data) => this.#trySend(data));
     this.#queuedMessages = [];
+  }
+
+  onceInitialized(fn: () => void) {
+    if (this.#isInitialized) fn();
+    else this.#onceInitializedCallbacks.push(fn);
+
+    return () => {
+      this.#onceInitializedCallbacks = this.#onceInitializedCallbacks.filter(
+        (cb) => cb !== fn,
+      );
+    };
+  }
+
+  #fireInitialized() {
+    this.#isInitialized = true;
+    this.#onceInitializedCallbacks.forEach((cb) => cb());
+    this.#onceInitializedCallbacks = [];
+  }
+
+  async initialize() {
+    await this.callProcedure("*", "events.initialized");
+
+    this.#fireInitialized();
   }
 }

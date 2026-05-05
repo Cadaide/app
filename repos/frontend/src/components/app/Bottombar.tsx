@@ -1,12 +1,14 @@
 import { getLanguage, getLanguageName } from "@/editor/languages";
 import { useTabbarViewState } from "@/hooks/stores/useTabbarViewState";
 import { pathToName } from "@/utils/files/file";
+import { PluginHostStatusWidget } from "../widgets/bottombar/PluginHostStatusWidget";
 
 export function Bottombar() {
   const activeTabPath = useTabbarViewState((state) => state.activeTabPath);
 
   return (
     <div className="w-full h-8 bg-ctp-mantle border-t border-ctp-surface0 flex flex-row items-center px-3.5">
+      <PluginHostStatusWidget />
       <div className="mr-auto"></div>
       <div className="text-sm flex flex-row gap-4">
         <p>
