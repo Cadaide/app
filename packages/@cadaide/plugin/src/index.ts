@@ -4,6 +4,7 @@ import { CadaideHTTP } from "./lib/http";
 import { CadaideNotifications } from "./lib/notifications";
 import { CadaidePackageManager } from "./lib/packageManager";
 import { CadaideShell } from "./lib/shell";
+import { CadaideWorkspace } from "./lib/workspace";
 
 export * from "./types/PackageManager";
 
@@ -14,6 +15,7 @@ export const cadaide = {
   packageManager: CadaidePackageManager,
   http: CadaideHTTP,
   shell: CadaideShell,
+  workspace: CadaideWorkspace,
 
   events: HostEvents,
 };

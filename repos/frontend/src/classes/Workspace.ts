@@ -27,6 +27,10 @@ export class Workspace {
     this.#window = new Window(this);
 
     Workspace.#instance = this;
+
+    this.#pluginHostSession.registerProcedure("workspace.cwd", async () => {
+      return this.#path;
+    });
   }
 
   static get instance() {

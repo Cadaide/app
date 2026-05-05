@@ -232,6 +232,8 @@ export function PackageManagerViewPackageDetailView(
 ) {
   const workspace = useWorkspaceState((state) => state.workspace);
 
+  const [isProcessing, setProcesing] = useState(false);
+
   const { data, isLoading, reload } = useAwait(
     () =>
       workspace!.pluginHostSession.callProcedure<IDetailedPackageInfo>(
@@ -247,7 +249,8 @@ export function PackageManagerViewPackageDetailView(
 
   const handleInstall = useCallback(
     async (version: string) => {
-      if (!workspace) return;
+      if (!workspace || isProcessing) return;
+      setProcesing(true);
 
       await workspace.pluginHostSession.callProcedure(
         "app.cadaide.playground",
@@ -258,13 +261,16 @@ export function PackageManagerViewPackageDetailView(
         },
       );
 
+      setProcesing(false);
+
       await reload();
       props.reload();
     },
     [props, workspace, reload],
   );
   const handleUninstall = useCallback(async () => {
-    if (!workspace) return;
+    if (!workspace || isProcessing) return;
+    setProcesing(true);
 
     await workspace.pluginHostSession.callProcedure(
       "app.cadaide.playground",
@@ -273,6 +279,8 @@ export function PackageManagerViewPackageDetailView(
         id: props.package.id,
       },
     );
+
+    setProcesing(false);
 
     await reload();
     props.reload();
@@ -300,7 +308,11 @@ export function PackageManagerViewPackageDetailView(
           <div className="flex flex-row items-center gap-3">
             {data.result.isInstalled ? (
               <>
-                <Button variant="danger" onClick={handleUninstall}>
+                <Button
+                  variant="danger"
+                  onClick={handleUninstall}
+                  isLoading={isProcessing}
+                >
                   Uninstall
                 </Button>
                 <span className="text-sm text-ctp-subtext0 ml-2">
@@ -314,7 +326,11 @@ export function PackageManagerViewPackageDetailView(
                 }
               >
                 <div className="flex flex-row items-center gap-3">
-                  <Button variant="primary" type="submit">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    isLoading={isProcessing}
+                  >
                     Install
                   </Button>
                   <Select

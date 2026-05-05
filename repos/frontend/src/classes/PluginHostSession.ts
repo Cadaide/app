@@ -12,7 +12,7 @@ export class PluginHostSession {
     this.#socket = new WebSocket(
       `ws://localhost:${ApplicationConfig.backendPort}/plugin/ws`,
     );
-    this.#rpc = new RPC();
+    this.#rpc = new RPC(false, 60_000);
 
     this.#socket.addEventListener("open", () => this.#onOpen());
 
