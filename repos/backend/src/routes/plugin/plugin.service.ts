@@ -11,6 +11,7 @@ import { CFG_PATH_PLUGINS_DIR } from 'src/config/paths';
 import { PLUGIN_REPOINDEX_URL } from 'src/config/plugins';
 import { IPluginIndex, IPluginRepoIndex } from 'src/types/Plugin';
 import { PluginLibService } from './lib/lib.service';
+import { spawn } from 'child_process';
 
 @Injectable()
 export class PluginService implements OnModuleInit {
@@ -118,6 +119,19 @@ export class PluginService implements OnModuleInit {
         await writeFile(targetPath, content);
       }
     }
+
+    await new Promise((r) => {
+      const proc = spawn(
+        process.env.BUN_BINARY_PATH ?? 'bun',
+        ['install', '--no-cache', '@cadaide/plugin@latest'],
+        {
+          cwd: pluginPath,
+          stdio: 'pipe',
+        },
+      );
+
+      proc.on('exit', r);
+    });
   }
 
   async installFromFolder(folderPath: string) {

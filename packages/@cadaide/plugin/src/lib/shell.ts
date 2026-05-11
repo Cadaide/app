@@ -9,6 +9,7 @@ export class CadaideShell {
   ): Promise<{
     stdout: string;
     stderr: string;
+    code: number;
   }> {
     return await HostRPC.instance.backend.callProcedure(
       "shell.run",

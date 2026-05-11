@@ -144,6 +144,14 @@ export function Menubar() {
             label: "Reload window",
             onClick: () => window.location.reload(),
           },
+          {
+            type: "item",
+            label: "Restart server",
+            onClick: () => {
+              window.api.restartServer();
+              window.location.reload();
+            },
+          },
         ],
       },
     ],

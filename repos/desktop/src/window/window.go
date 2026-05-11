@@ -194,6 +194,7 @@ func newWebviewWindow(config WindowConfig) *Window {
 			windowMaximize: () => window.__windowMaximize(),
 			windowRestore: () => window.__windowRestore(),
 			windowIsMaximized: () => window.__windowIsMaximized(),
+			restartServer: () => window.__restartServer(),
 		}
 
 		console.log = (...args) =>
@@ -210,6 +211,18 @@ func newWebviewWindow(config WindowConfig) *Window {
 		config:   config,
 		webview:  wv,
 		useLorca: false,
+	}
+}
+
+func (w *Window) BindRestartServer(cb func() error) {
+	if w.useLorca {
+		w.lorca.Bind("__restartServer", func() error {
+			return cb()
+		})
+	} else {
+		w.webview.Bind("__restartServer", func() error {
+			return cb()
+		})
 	}
 }
 

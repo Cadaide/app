@@ -12,6 +12,7 @@ declare global {
       windowMaximize: () => Promise<void>;
       windowRestore: () => Promise<void>;
       windowIsMaximized: () => Promise<boolean>;
+      restartServer: () => Promise<void>;
     };
   }
 }

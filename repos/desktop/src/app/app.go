@@ -47,6 +47,20 @@ func RunInDevMode() {
 		EnableDevtools: false, // TODO: Figure out how to enable -- lags the whole app
 	})
 
+	w.BindRestartServer(func() error {
+		shell.KillGroup(backendCmd)
+
+		cmd, err := RunBackendInDevMode(backendPort)
+		if err != nil {
+			return err
+		}
+
+		backendCmd = cmd
+		WaitForBackend(backendPort)
+
+		return nil
+	})
+
 	defer w.Destroy()
 
 	w.Open(fmt.Sprintf("http://localhost:%d", frontendPort))
@@ -87,6 +101,20 @@ func Run() {
 		Width:          1280,
 		Height:         720,
 		EnableDevtools: false,
+	})
+
+	w.BindRestartServer(func() error {
+		shell.KillGroup(backendCmd)
+
+		cmd, err := RunBackend(backendPort)
+		if err != nil {
+			return err
+		}
+
+		backendCmd = cmd
+		WaitForBackend(backendPort)
+
+		return nil
 	})
 
 	defer w.Destroy()

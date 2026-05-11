@@ -42,10 +42,11 @@ export class PluginLibService {
           let stdout = '';
           let stderr = '';
 
-          child.on('exit', () => {
+          child.on('exit', (code) => {
             r({
               stdout,
               stderr,
+              code,
             });
           });
 
