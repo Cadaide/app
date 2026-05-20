@@ -2,8 +2,13 @@ import { HostRPC } from "../host/rpc";
 import type { IPackageManager } from "../types/PackageManager";
 
 export class CadaidePackageManager {
-  static provide(provider: new () => IPackageManager) {
+  static provide(languages: string[], provider: new () => IPackageManager) {
     const instance = new provider();
+
+    HostRPC.instance.backend.callProcedure(
+      "packageManager.register",
+      languages,
+    );
 
     HostRPC.instance.frontend.registerProcedure(
       "packageManager.listInstalled",

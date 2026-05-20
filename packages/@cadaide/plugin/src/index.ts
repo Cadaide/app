@@ -19,5 +19,3 @@ export const cadaide = {
 
   events: HostEvents,
 };
-
-HostRPC.instance.backend.callProcedure("log", "TEST");

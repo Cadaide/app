@@ -22,7 +22,7 @@ export class PluginHostSession {
   async loadPlugin(
     pluginId: string,
     sendMessage: (message: string) => void,
-    createProcedures: (rpc: RPC) => void,
+    createProcedures: (rpc: RPC, pluginId: string) => void,
   ) {
     const pluginMetadata = await new PluginParser(pluginId).parse();
     if (!pluginMetadata.isValid) throw new Error(pluginMetadata.message);
@@ -48,7 +48,7 @@ export class PluginHostSession {
       },
     );
 
-    createProcedures(beRpc);
+    createProcedures(beRpc, pluginId);
 
     await vm.initialize();
 
