@@ -16,6 +16,7 @@ import { useXTerm } from "react-xtermjs";
 import { ITerminalOptions } from "@xterm/xterm";
 import { useShellPtySessionsState } from "@/hooks/stores/useShellPtySessionsState";
 import { ShellPtySession } from "@/classes/ShellPtySession";
+import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
 
 const TERMINAL_OPTIONS: ITerminalOptions = {
   fontFamily: "var(--font-firacode-nerd)",
@@ -134,6 +135,7 @@ export function TerminalView() {
     sessionTitles,
   } = useShellPtySessionsState();
   const initializingStateRef = useRef<boolean>(false);
+  const workspace = useWorkspaceState((state) => state.workspace);
 
   useEffect(() => {
     if (!activeSession && sessions.size > 0)
@@ -144,16 +146,16 @@ export function TerminalView() {
       initializingStateRef.current = true;
 
       const id = Math.random().toString(16);
-      addSession(id, new ShellPtySession());
+      addSession(id, new ShellPtySession(workspace?.path));
       setActiveSession(id);
     }
-  }, [sessions, activeSession, addSession, setActiveSession]);
+  }, [sessions, activeSession, addSession, setActiveSession, workspace]);
 
   const handleCreateSession = useCallback(() => {
     const id = Math.random().toString(16);
-    addSession(id, new ShellPtySession());
+    addSession(id, new ShellPtySession(workspace?.path));
     setActiveSession(id);
-  }, [addSession, setActiveSession]);
+  }, [addSession, setActiveSession, workspace]);
 
   const handleDeleteSession = useCallback(
     (sid: string, e: React.MouseEvent) => {
@@ -201,9 +203,9 @@ export function TerminalView() {
         </div>
         <div className="flex flex-col w-48 border-l border-ctp-surface1 bg-ctp-mantle">
           <div className="flex flex-row justify-between items-center px-4 py-2 border-b border-ctp-surface1 text-ctp-text">
-            <span className="font-bold text-sm uppercase tracking-wider text-ctp-subtext0">
+            <p className="text-ctp-lavender text-[14px] font-semibold">
               Terminal
-            </span>
+            </p>
             <button
               onClick={handleCreateSession}
               className="w-5 h-5 flex items-center justify-center hover:bg-ctp-surface2 rounded-sm cursor-pointer transition-colors duration-150"

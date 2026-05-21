@@ -49,7 +49,7 @@ export class ShellService {
     });
   }
 
-  async createPtySession(client: WebSocket) {
+  async createPtySession(client: WebSocket, cwd?: string) {
     const sessionId = randomUUID();
 
     const pty = spawnPty(
@@ -59,7 +59,7 @@ export class ShellService {
         name: 'xterm-256color',
         cols: 80,
         rows: 24,
-        cwd: process.env.HOME,
+        cwd: cwd || process.env.HOME,
         env: {
           ...process.env,
           TERM: 'xterm-256color',
