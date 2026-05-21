@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import path from 'path';
-import fs from 'fs';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { ValidationPipe } from '@nestjs/common';
+
+process.title = 'cadaide';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

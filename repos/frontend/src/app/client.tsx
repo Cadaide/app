@@ -26,7 +26,7 @@ export default function Client(props: IClientProps) {
 
     if (typeof window == "undefined") return;
 
-    Application.initialize(props.env).then(() => {
+    Application.initialize().then(() => {
       setInitialized(true);
     });
   }, [props.env]);
