@@ -4,6 +4,11 @@ const SettingsSchema = z.object({
   editor: z.object({
     fontSize: z.number().default(18),
   }),
+  terminal: z.object({
+    shell: z
+      .string()
+      .default(process.platform === 'win32' ? 'powershell.exe' : 'bash'),
+  }),
   packageManager: z.object({
     provider: z.record(z.string(), z.string()),
   }),
@@ -15,6 +20,9 @@ export const defaultSettings: z.infer<typeof SettingsSchema> & {
   $schema: './settings.schema.json',
   editor: {
     fontSize: 18,
+  },
+  terminal: {
+    shell: process.platform === 'win32' ? 'powershell.exe' : 'bash',
   },
   packageManager: {
     provider: {},

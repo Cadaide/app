@@ -18,6 +18,7 @@ export class ShellGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.shellService.createPtySession(
       client,
       params.get('cwd') ?? process.env.HOME,
+      params.get('executable') ?? undefined,
     );
   }
 

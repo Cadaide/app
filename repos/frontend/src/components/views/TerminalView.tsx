@@ -17,6 +17,7 @@ import { ITerminalOptions } from "@xterm/xterm";
 import { useShellPtySessionsState } from "@/hooks/stores/useShellPtySessionsState";
 import { ShellPtySession } from "@/classes/ShellPtySession";
 import { useWorkspaceState } from "@/hooks/stores/useWorkspaceState";
+import { Settings } from "@/classes/Settings";
 
 const TERMINAL_OPTIONS: ITerminalOptions = {
   fontFamily: "var(--font-firacode-nerd)",
@@ -146,7 +147,13 @@ export function TerminalView() {
       initializingStateRef.current = true;
 
       const id = Math.random().toString(16);
-      addSession(id, new ShellPtySession(workspace?.path));
+      addSession(
+        id,
+        new ShellPtySession(
+          workspace?.path,
+          Settings.instance.get("terminal.shell"),
+        ),
+      );
       setActiveSession(id);
     }
   }, [sessions, activeSession, addSession, setActiveSession, workspace]);

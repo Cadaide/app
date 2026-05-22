@@ -6,9 +6,9 @@ export class ShellPtySession {
   #titleChangeCallbacks: ((title: string) => void)[] = [];
   #dataCallbacks: ((data: string) => void)[] = [];
 
-  constructor(cwd: string | undefined) {
+  constructor(cwd: string | undefined, executable?: string) {
     this.#socket = new WebSocket(
-      `ws://localhost:${ApplicationConfig.backendPort}/shell/ws${cwd ? `?cwd=${cwd}` : ""}`,
+      `ws://localhost:${ApplicationConfig.backendPort}/shell/ws${cwd ? `?cwd=${cwd}` : ""}${executable ? `&executable=${executable}` : ""}`,
     );
 
     this.#socket.addEventListener("message", (ev) => {

@@ -49,12 +49,12 @@ export class ShellService {
     });
   }
 
-  async createPtySession(client: WebSocket, cwd?: string) {
+  async createPtySession(client: WebSocket, cwd?: string, executable?: string) {
     const sessionId = randomUUID();
 
     const pty = spawnPty(
-      process.platform === 'win32' ? 'powershell.exe' : 'zsh',
-      ['-i'],
+      executable ?? (process.platform === 'win32' ? 'powershell.exe' : 'zsh'),
+      executable ? [] : ['-i'],
       {
         name: 'xterm-256color',
         cols: 80,
